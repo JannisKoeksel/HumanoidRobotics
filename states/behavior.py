@@ -40,12 +40,7 @@ fight >> idle | "person_leaves"
 
 
 
-def idleHandler(state:'State'):
-    
-    return "motion"
 
-idle.add_handler(idleHandler)
-scanning.add_handler(idleHandler)
 
 StateMashie.print()
 

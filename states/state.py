@@ -1,8 +1,8 @@
 
-from typing import Any, List,Type, Callable
+from typing import Any, List,Type, Callable, Dict
 
 class StateMashie:
-    allStates: List['State'] = []
+    allStates: Dict[str,'State'] = []
     
     activeState: 'State'
     def __init__(self, initial_state:'State') -> None:
@@ -26,8 +26,8 @@ class StateMashie:
             
     def print() :
         
-        for state in StateMashie.allStates:
-            state.print()
+        for state in StateMashie.allStates.keys():
+            StateMashie.allStates["state"].print()
 
 class Transition:
     
@@ -63,7 +63,7 @@ class State:
     def __init__(self, name:str) -> None:
         self.name = name
         self.transitions = {}
-        StateMashie.allStates.append(self)
+        StateMashie.allStates[name] = self
         
         
     def __rshift__(self,other:'State'):
@@ -96,6 +96,7 @@ class State:
   
 
 
+    
 
 
 # idle = State("idle")
