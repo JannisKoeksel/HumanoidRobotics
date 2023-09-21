@@ -10,6 +10,7 @@ from datetime import datetime
 staticBackground = None
 
 # Capturing video
+#Note that the argument should be different when connecting to the Hubert camera, 
 video = cv2.VideoCapture(0)
 
 # Infinite while loop to treat stack of image as video
@@ -26,7 +27,7 @@ while True:
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # Converting gray scale image to GaussianBlur
-    # so that change can be find easily
+    # so that change can be found easily
     gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
     # In first iteration we assign the value
@@ -42,8 +43,8 @@ while True:
     # If change in between static background and
     # current frame is greater than 30 it will show white color(255)
     #The motion sensitivity, a greater value is less sensitive
-    motionSensitity = 50
-    threshFrame = cv2.threshold(diffFrame, motionSensitity, 255, cv2.THRESH_BINARY)[1]
+    motionSensitivity = 30
+    threshFrame = cv2.threshold(diffFrame, motionSensitivity, 255, cv2.THRESH_BINARY)[1]
     threshFrame = cv2.dilate(threshFrame, None, iterations=2)
 
     # Finding contour of moving object
