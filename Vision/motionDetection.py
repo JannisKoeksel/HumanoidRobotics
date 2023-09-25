@@ -1,10 +1,8 @@
 # Python program to implement
 # Webcam Motion Detector
 
-# importing OpenCV, time and Pandas library
+# importing OpenCV
 import cv2
-# importing datetime class from datetime library
-from datetime import datetime
 
 # Assigning our static_back to None
 staticBackground = None
@@ -20,7 +18,7 @@ while True:
     # Reading frame(image) from video
     check, frame = video.read()
 
-    # Initializing motion = 0(no motion)
+    # Initializing motion = 0 (no motion)
     motion = 0
 
     # Converting color image to gray_scale image
@@ -43,7 +41,7 @@ while True:
     # If change in between static background and
     # current frame is greater than 30 it will show white color(255)
     #The motion sensitivity, a greater value is less sensitive
-    motionSensitivity = 30
+    motionSensitivity = 35
     threshFrame = cv2.threshold(diffFrame, motionSensitivity, 255, cv2.THRESH_BINARY)[1]
     threshFrame = cv2.dilate(threshFrame, None, iterations=2)
 
