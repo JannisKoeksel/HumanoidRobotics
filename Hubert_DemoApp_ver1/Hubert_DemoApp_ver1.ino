@@ -22,6 +22,8 @@ const int pos_max[] = {2330, 2340, 2400, 2200, 2400, 2150};
 
 const int pos_move[] = {2200, 1000, 1500, 1100, 2300, 1600};
 
+String body_parts[] = {'B', 'Hp', 'Ht', 'S', 'E', 'G'}; // idk if this works
+
 //Servo update function
 void servo_body_ex(const int new_pos) {
 
@@ -199,36 +201,17 @@ void setup() {
 	delay(2000);
 }
 
-
 void loop() {
   if (Serial.available() > 0) {
     char command = Serial.read();
     int position = Serial.parseInt();
 
-    if (command == 'B') { // 'B' for body
-      // int bodyPos = Serial.parseInt();
-      servo_body_ex(position);
-    } 
-    else if (command == 'Hp') { // 'Hp' for head pan
-      // int panPos = Serial.parseInt();
-      servo_neck_pan(position);
-    } 
-    else if (command == 'Ht') { // 'Ht' for head tilt
-      // int tiltPos = Serial.parseInt();
-      servo_neck_tilt(position);
-    } 
-    else if (command == 'S') { // 'S' for shoulder
-      // int shoulderPos = Serial.parseInt();
-      servo_shoulder(position);
-    }
-    else if (command == 'E') { // 'E' for elbow
-      // int elbowPos = Serial.parseInt();
-      servo_elbow(position);
-    }
-    else if (command == 'G') { // 'G' for gripper
-      // int gripperPos = Serial.parseInt();
-      servo_gripper_ex(position);
-    }
+    if (command == 'B') { servo_body_ex(position); } 
+    else if (command == 'Hp') { servo_neck_pan(position); } 
+    else if (command == 'Ht') { servo_neck_tilt(position); } 
+    else if (command == 'S') { servo_shoulder(position); }
+    else if (command == 'E') { servo_elbow(position); }
+    else if (command == 'G') { servo_gripper_ex(position); }
   }
 }
 
