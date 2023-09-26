@@ -1,5 +1,6 @@
-#from states import StateMashie
+from states import StateMashie
 import pyttsx3
+import face_recognition
 
 engine = pyttsx3.init()
 voices = engine.getProperty('voices')       #getting details of current voice
