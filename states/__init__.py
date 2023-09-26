@@ -1,1 +1,1 @@
-from state import StateMashie
+from .state import StateMashie
