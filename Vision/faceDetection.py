@@ -3,7 +3,7 @@ from ultralytics import YOLO
 import cv2
 
 #Creates a model based on the pretrained data from the .pt file
-model = YOLO("HumanoidRobotics\Vision\Models\yolov8n-face.pt")
+model = YOLO("Vision\Models\yolov8n-face.pt")
 #Pretrained model acquired from https://github.com/akanametov/yolov8-face
 vid = cv2.VideoCapture(1)
 #May have to change center Image depending on the resolution of Hubert's camera.
