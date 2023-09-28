@@ -1,0 +1,5 @@
+{
+    "board": "arduino:avr:uno",
+    "sketch": "Hubert_DemoApp_ver1\\Hubert_DemoApp_ver1.ino",
+    "port": "COM3"
+}
