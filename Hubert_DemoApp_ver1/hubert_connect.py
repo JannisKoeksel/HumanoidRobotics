@@ -7,13 +7,13 @@ os.system("cls")
 # OBS!! must close monitor before running
 # if a position is given while the robot is still moving it wont recognize that command
 
-ser = serial.Serial('COM3', 57600)  # Uncomment when hooked to Hubert
+ser = serial.Serial('COM3', 57600)
 
 #               body    headPan  headTilt  shoulder  elbow  gripper
-body_parts    = ['B',   'Hp',    'Ht',     'S',      'E',   'G']
-position_init = [1700,  1500,    2000,     2200,     1650,  1600]
-position_min  = [560,   550,     950,      750,      550,   550]
-position_max  = [2330,  2340,    2400,     2200,     2400,  2150]
+body_parts    = ['B',   'P',    'T',     'S',      'E',   'G']
+position_init = [1700,  1500,    2000,   2127.5,   1485,  1600] # E: 1650, S: 2200
+position_min  = [560,   550,     950,    750,      550,   550]
+position_max  = [2330,  2340,    2400,   2200,     2400,  2150]
 
 def move_servo(part, position):
     ser.write(part.encode())
@@ -51,7 +51,7 @@ def front_and_back(body_part, sleep_time=0.5, repeats=1, high = 71, low=-71, ste
 
 while True:
 
-    part_choice = input("Enter 'B', 'Hp', 'Ht', 'S', 'E' or 'G' for part, or 'close' to finnish: ")
+    part_choice = input("Enter 'B', 'P', 'T', 'S', 'E' or 'G' for part, or 'close' to finnish: ")
 
     if part_choice == 'close':
         print('Run is over.')

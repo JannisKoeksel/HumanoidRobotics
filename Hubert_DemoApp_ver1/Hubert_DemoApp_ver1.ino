@@ -13,7 +13,8 @@ Servo gripper;
 //Init position of all servos
 const int servo_pins[] = {3, 5, 6, 9, 10, 11};
 
-const int pos_init[] = {1700, 1500, 2000, 2200, 1650, 1600};
+const int pos_init[] = {1700, 1500, 2000, 2127.5, 1485, 1600}; // E: 1650, S: 2200
+// const int pos_init[] = {1700, 1500, 2000, 2200, 1650, 1600};
 int curr_pos[6];
 int new_servo_val[6];
 
@@ -22,7 +23,7 @@ const int pos_max[] = {2330, 2340, 2400, 2200, 2400, 2150};
 
 const int pos_move[] = {2200, 1000, 1500, 1100, 2300, 1600};
 
-String body_parts[] = {'B', 'Hp', 'Ht', 'S', 'E', 'G'}; // idk if this works
+char body_parts[] = {'B','P', 'T', 'S', 'E', 'G'};
 
 //Servo update function
 void servo_body_ex(const int new_pos) {
@@ -205,41 +206,40 @@ void loop() {
   if (Serial.available() > 0) {
     char command = Serial.read();
     int position = Serial.parseInt();
-
     if (command == 'B') { servo_body_ex(position); } 
-    else if (command == 'Hp') { servo_neck_pan(position); } 
-    else if (command == 'Ht') { servo_neck_tilt(position); } 
+    else if (command == 'P') { servo_neck_pan(position); } 
+    else if (command == 'T') { servo_neck_tilt(position); } 
     else if (command == 'S') { servo_shoulder(position); }
     else if (command == 'E') { servo_elbow(position); }
     else if (command == 'G') { servo_gripper_ex(position); }
   }
 }
 
-// void loop() {
-//   Serial.println("11!");
-//   delay(1000);
-//   byte t;
-//   for(t=0; t<5; t++){
-//     servo_neck_tilt(pos_move[2]);
-//     delay(100);
-//     // ny:
-//     servo_neck_pan(pos_move[1]);
-//     delay(100);
-//     servo_neck_tilt(pos_init[2]);
-//     delay(100);
-//     // ny:
-//     servo_neck_pan(pos_init[1]);
-//     delay(100);
-//   }
-//   Serial.println("22!");
-//   // byte j;
-//   // for(j=0; j<5; j++){
-//   //   servo_elbow(pos_move[4]);
-//   //   delay(100);
-//   //   servo_elbow(pos_init[4]);
-//   //   delay(100);
-//   // }
-//   Serial.println("33!"); 
-//   servo_neck_tilt(pos_init[2]);
-//   delay(2000);
-// }
+// // void loop() {
+// //   Serial.println("11!");
+// //   delay(1000);
+// //   byte t;
+// //   for(t=0; t<5; t++){
+// //     servo_neck_tilt(pos_move[2]);
+// //     delay(100);
+// //     // ny:
+// //     servo_neck_pan(pos_move[1]);
+// //     delay(100);
+// //     servo_neck_tilt(pos_init[2]);
+// //     delay(100);
+// //     // ny:
+// //     servo_neck_pan(pos_init[1]);
+// //     delay(100);
+// //   }
+// //   Serial.println("22!");
+// //   // byte j;
+// //   // for(j=0; j<5; j++){
+// //   //   servo_elbow(pos_move[4]);
+// //   //   delay(100);
+// //   //   servo_elbow(pos_init[4]);
+// //   //   delay(100);
+// //   // }
+// //   Serial.println("33!"); 
+// //   servo_neck_tilt(pos_init[2]);
+// //   delay(2000);
+// // }
