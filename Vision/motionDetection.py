@@ -1,26 +1,46 @@
 # Python program to implement
 # Webcam Motion Detector
 #Code acquired from https://www.geeksforgeeks.org/webcam-motion-detector-python/
+import sys
+
 # importing OpenCV
 import cv2
-
+import time
+#Add some idle behaviour?? Move Hubert Body from left to right...
 # Assigning our static_back to None
 staticBackground = None
 
 # Capturing video
 #Note that the argument should be different when connecting to the Hubert camera, camera -> argument=1 
 video = cv2.VideoCapture(1)
+#Counts frames, use this one to make changes every X frames.
 a = 0
 # Infinite while loop to treat stack of image as video
 #May want to change this to see the difference between the current frame and the frame x frames before
 #Instead of the difference between the current frame and the "base" frame.
 while True:
     # Reading frame(image) from video
+    framesBetweenMovement = 200
+    if (a % framesBetweenMovement == 0):
+        b = 0
+        if (b == 0):
+            #Function calls, just pseudo coded right now.
+            moveBodyPos(1300) 
+            b = 1
+        if (b == 1):
+            moveBodyPos(2100)
+            b = 2
+        else:
+            moveBodyPos(1700)
+            b = 0
+        #Get some better function here
+        #We want the movement to finish so measure the time it takes
+        #For Hubert to move into each position.
+        time.sleep(10)
     check, frame = video.read()
     a += 1
     # Initializing motion = 0 (no motion)
     motion = 0
-
     # Converting color image to gray_scale image
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
