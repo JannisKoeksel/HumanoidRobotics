@@ -35,6 +35,8 @@ face_encodings = []
 face_names = []
 process_this_frame = True
 
+print('bra')
+
 while True:
     # Grab a single frame of video
     ret, frame = video_capture.read()
