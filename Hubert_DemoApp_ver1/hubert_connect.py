@@ -67,3 +67,5 @@ while True:
     print('Position value chosen: ', new_position)
 
     move_servo(part_choice, new_position)
+
+    
