@@ -9,18 +9,18 @@ class StateMashie:
         self.activate(initial_state)
     
     def activate(self,state:'State'):
-        print("current State:", state.name)
+        # print("current State:", state.name)
         self.activeState = state
         
     def run(self):
         while True:
-            print("running handler", self.activeState.name)
+            # print("running handler", self.activeState.name)
             transition = self.activeState.run_handler()
             if(transition == None):
                 print("stopping StateMashie")
                 return False
-            print("transition is:",transition)
-            print("handler returned:", transition.name)
+            # print("transition is:",transition)
+            # print("handler returned:", transition.name)
             self.activate(transition.outgoing)
             # print("transition", transition.name, "from", transition.incoming.name, "to", transition.outgoing.name)
             
@@ -44,7 +44,7 @@ class Transition:
     
     def __or__(self,other:str):
         self.incoming.transitions[other] = self
-        print("adding other", other)
+        # print("adding other", other)
         self.name = other
         
   
@@ -69,7 +69,7 @@ class State:
     def __rshift__(self,other:'State'):
         return Transition(self,other)   
     
-    def add_handler(self,handler):
+    def add_handler(self,handler:Callable[['State'], str]):
         
         self.handler = handler
         
@@ -78,11 +78,11 @@ class State:
         res = self.handler(self)
     
         if(res):
-            print("res",res, "keys",self.transitions.keys())
+            # print("res",res, "keys",self.transitions.keys())
             transition = self.transitions[res]
-            print(transition.name, "found")
+            # print(transition.name, "found")
             if(transition.name ==  res):
-                print("return", res, transition.name)
+                # print("return", res, transition.name)
                     # print("returning transition from handler:", transition.name, "in state", self.name)
                 return transition
                 
