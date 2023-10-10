@@ -34,28 +34,20 @@ def correct_position(part, perc_position):
 
     return new_pos
 
-def front_and_back(body_part, sleep_time=0.5, repeats=1, high = 71, low=-71, step_size=10):  # not used
-    for _ in range(repeats):
-        for angle in range(0, high, step_size):
-            time.sleep(sleep_time)
-            position = correct_position(body_part, angle)
-            move_servo(body_part, position)
-        for angle in range(high-step_size, low, -step_size):
-            time.sleep(sleep_time)
-            position = correct_position(body_part, angle)
-            move_servo(body_part, position)
-        for angle in range(low, 0, step_size):
-            time.sleep(sleep_time)
-            position = correct_position(body_part, angle)
-            move_servo(body_part, position)
-
 while True:
 
-    part_choice = input("Enter 'B', 'P', 'T', 'S', 'E' or 'G' for part, or 'close' to finnish: ")
+    part_choice = input("Enter 'B', 'P', 'T', 'S', 'E' or 'G' for part, 'shoot' or 'close': ")
 
     if part_choice == 'close':
+        move_servo('q', position=1500) # position here is arbitrary
+        time.sleep(2)
         print('Run is over.')
         break
+    elif part_choice == 'shoot':
+        move_servo('s', position=1500) # position here is arbitrary
+        time.sleep(2)
+        print('You are shot!')
+        continue
     elif part_choice not in body_parts:
         print('Not a valid input. Try again.')
         continue

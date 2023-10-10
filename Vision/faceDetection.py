@@ -13,11 +13,12 @@ centerImage = [320,240]
 ret, img = vid.read()
 results = model(img)
 print("Model loading 2 done")
+
 def face_detection(queue):
     while (True):
-#Image path to the test picture
-#img_path = "FaceTest.jpg"
-#Apply model on the image and saves the results (Coordinates for rectangles)
+        #Image path to the test picture
+        #img_path = "FaceTest.jpg"
+        #Apply model on the image and saves the results (Coordinates for rectangles)
         ret, img = vid.read()
 
         # the 'q' button is set as the
@@ -41,9 +42,9 @@ def face_detection(queue):
             bottomRightX = int(box.xyxy.tolist()[0][2])
             bottomRightY = int(box.xyxy.tolist()[0][3])
             
-                #Send the difference between the center of the rectangle encapsulating the first face and the center of the image 
-                #to Arduino with a scale factor, should make the robot tqrack the faces. However, may have to make it so it only 
-                #sends it to Arduino every X frames so it doesnt have a seizure, also scale factor could be important.
+            #Send the difference between the center of the rectangle encapsulating the first face and the center of the image 
+            #to Arduino with a scale factor, should make the robot tqrack the faces. However, may have to make it so it only 
+            #sends it to Arduino every X frames so it doesnt have a seizure, also scale factor could be important.
             centerFaceCoords = [(topLeftX + bottomRightX )/2, (topLeftY + bottomRightY)/2]
             diffX = centerFaceCoords[0] - centerImage[0]
             diffY = centerFaceCoords[1] - centerImage[1]
