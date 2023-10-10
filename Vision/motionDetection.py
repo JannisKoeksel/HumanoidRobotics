@@ -8,7 +8,7 @@ import cv2
 import time
 #Add some idle behaviour?? Move Hubert Body from left to right...
 # Assigning our static_back to None
-def motion_detection(motion, terminate):
+def motion_detection(queue, terminate):
     staticBackground = None
 
     # Capturing video
