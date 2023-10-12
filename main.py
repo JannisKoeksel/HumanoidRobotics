@@ -1,5 +1,5 @@
 import multiprocessing
-from vision import face_detection
+from Vision import face_detection
 from FaceDetection import face_detect as identify_faces
 from FaceDetection.face_recon import process_frame
 import cv2

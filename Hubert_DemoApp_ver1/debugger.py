@@ -17,26 +17,8 @@ position_min  = [560,   550,     950,    750,      550,   550]
 position_max  = [2330,  2340,    2400,   2200,     2400,  2150]
 
 def move_servo(part, position):
-
-    # ser.write(part.encode())
-    position = int(position)
-    ser.write((part + f'{ position}').encode())
-   
-    time.sleep(0.05)
-
-    while ser.in_waiting == 0:
-        pass
-
-    akn = ser.readline().decode().strip()
-
-    print(akn)
-
-    if akn == "AKN":
-        print("receaved")
-    else: 
-        print(akn)
-
-    # ser.write((part + f'{ position}\n').encode())
+    ser.write(part.encode())
+    ser.write(f'{position:.2f}\n'.encode())  # Send the position as a float with two decimal places
 
 def correct_position(part, perc_position):
     index = body_parts.index(part)
@@ -52,34 +34,26 @@ def correct_position(part, perc_position):
         new_pos = position_init[index]
 
     return new_pos
-
-def idle_behaviour(position, step_size=50):
-    move_servo('i', position) # position here is arbitrary
-    time.sleep(2)
-    # for position in range(position_init[0], position_max[0] -100, step_size):
-    #     move_servo('i', position)
-    #     time.sleep(2)
-    # for position in range(position_max[0]-100, position_min[0]+100, step_size):
-    #     move_servo('i', position)
-    #     time.sleep(2)
     
 def shoot():
-    move_servo('S', 1990.0)
-    move_servo('E', 2217.0)
-    move_servo('G', 1800.0)  # change depending on laser pointer
+    move_servo('S', 1990)
+    move_servo('E', 2217)
+    move_servo('G', 1800)  # change depending on laser pointer
+
+# def move_to_init():
+#     move
 
 while True:
 
     choice = input("Enter 'B', 'P', 'T', 'S', 'E' or 'G' for part, 'shoot', 'idle' or 'close': ")
 
     if choice == 'close':
-        move_servo('q', position=1500) # position here is arbitrary
-        time.sleep(2)
+        # move_servo('q', position=1500) # position here is arbitrary
+        # time.sleep(2)
         print('Run is over.')
         break
     elif choice == 'shoot':
-        # move_servo('s', position=1500) # position here is arbitrary
-        # time.sleep(2)
+
         shoot()
         print('You are shot!')
         continue
@@ -87,20 +61,17 @@ while True:
         move_servo('E', position=1900) # position here is arbitrary
         move_servo('B', position=1200) # position here is arbitrary
         move_servo('T', position=1000) # position here is arbitrary
-        
-        # print('You are shot!')
         continue
     elif choice == 'idle':
-        for position in range(position_init[0], position_max[0] -100, 50):
-            idle_behaviour(position)
-            time.sleep(1.5)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                move_servo('s', position=1500) # position here is arbitrary
-                time.sleep(2)
-                print('You are shot!')
-                break
+        # for position in range(position_init[0], position_max[0] -100, 50):
+        #     idle_behaviour(position)
+        #     time.sleep(1.5)
+        #     if cv2.waitKey(1) & 0xFF == ord('q'):
+        #         move_servo('s', position=1500) # position here is arbitrary
+        #         time.sleep(2)
+        #         print('You are shot!')
+        #         break
         continue
-
     elif choice not in body_parts:
         print('Not a valid input. Try again.')
         continue
