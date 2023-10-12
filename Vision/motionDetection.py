@@ -9,6 +9,7 @@ import time
 #Add some idle behaviour?? Move Hubert Body from left to right...
 # Assigning our static_back to None
 def motion_detection(queue, terminate):
+    #Initializes the background
     staticBackground = None
 
     # Capturing video
@@ -16,11 +17,8 @@ def motion_detection(queue, terminate):
     video = cv2.VideoCapture(1)
     #Counts frames, use this one to make changes every X frames.
     a = 0
-    # Infinite while loop to treat stack of image as video
-    #May want to change this to see the difference between the current frame and the frame x frames before
-    #Instead of the difference between the current frame and the "base" frame.
     while True:
-        # Reading frame(image) from video
+        # Start of "scanning" behaviour
         """ framesBetweenMovement = 200
         if (a % framesBetweenMovement == 0):
             b = 0
@@ -38,19 +36,20 @@ def motion_detection(queue, terminate):
             #We want the movement to finish so measure the time it takes
             #For Hubert to move into each position.
             time.sleep(10) """
+        #Reads frame and check condition
         check, frame = video.read()
+        #Increments frame number
         a += 1
         # Initializing motion = 0 (no motion)
         motion = 0
-        # Converting color image to gray_scale image
+        # Converting color image to gray scale image
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        # Converting gray scale image to GaussianBlur
+        #Apply gaussianblur on the grayscaled image
         # so that change can be found easily
         gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
-        # In first iteration we assign the value
-        # of static_back to our first frame
+        #Assign background image as the first frame
         if staticBackground is None:
             staticBackground = gray
             continue
@@ -58,15 +57,17 @@ def motion_detection(queue, terminate):
                         #else it will detect motion anywhere a change happened after the first frame
             staticBackground = gray
             continue """
+        #Calculates the difference between current frame and background frame
         diffFrame = cv2.absdiff(staticBackground, gray)
-                # Difference between static background
-        # and current frame(which is GaussianBlur)
 
-        # If change in between static background and
-        # current frame is greater than 30 it will show white color(255)
+        
         #The motion sensitivity, a greater value is less sensitive
         motionSensitivity = 35
+
+        # If change in between static background and
+        # current frame is greater than motionSensitivity it will show white color(255)
         threshFrame = cv2.threshold(diffFrame, motionSensitivity, 255, cv2.THRESH_BINARY)[1]
+        #Dilates any motion found to easier find contour, may be unnecessary for our purposes
         threshFrame = cv2.dilate(threshFrame, None, iterations=2)
 
         # Finding contour of moving object
@@ -77,7 +78,7 @@ def motion_detection(queue, terminate):
             if cv2.contourArea(contour) < 10000:
                 continue
             motion = 1
-            #Add a statement to for transition between states, that is motion is detected -> "show your face" -> face detection
+            #Adds a rectangle to motion found. Probably unnecessary for our purposes, but good for testing.
             (x, y, w, h) = cv2.boundingRect(contour)
             # making green rectangle around the moving object
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
@@ -96,8 +97,8 @@ def motion_detection(queue, terminate):
         # Displaying color frame with contour of motion of object
         cv2.imshow("Color Frame", frame)
 
-        # if q entered whole process will stop
-        if terminate == 0:
+        # Terminate if needed or add to queue, (probably not needed aswell.)
+        if terminate == 1:
             break
         while queue.full():
             queue.get()
