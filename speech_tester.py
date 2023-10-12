@@ -18,6 +18,8 @@ from langchain.prompts import MessagesPlaceholder
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import LLMChain
 
+API_KEY = "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"
+
 def detect_leading_silence(sound, silence_threshold=-50.0, chunk_size=10):
     trim_ms = 0 # ms
 
@@ -40,9 +42,6 @@ def create_current_message(sentence):
     duration = len(audio)    
     trimmed_audio = audio[start_trim:duration-end_trim]
     trimmed_audio.export("current_message.wav", format="wav")
-
-
-API_KEY = "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"
 
 engine = pyttsx3.init()
 voices = engine.getProperty('voices')       #getting details of current voice
