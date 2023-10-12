@@ -1,20 +1,23 @@
 import time
 
-centerImage = [320,240]
-frameHeight = 480
-frameWidth = 640
-facePadding = 20
+
 
 
 
 def face_detection(queue, terminate):
     from ultralytics import YOLO
     import cv2
-    
     model = YOLO("Vision\Models\yolov8n-face.pt")
     vid = cv2.VideoCapture(0)
     ret, img = vid.read()
     results = model(img)
+    
+    
+    
+    centerImage = [320,240]
+    frameWidth  = 10000  # float `width`
+    frameHeight = 10000
+    facePadding = 0
     
     while (True):
         #Image path to the test picture
@@ -56,7 +59,7 @@ def face_detection(queue, terminate):
             faceImage.append(img[leftP:rightP, topP:bottomP])
             faceCoordinates.append([leftP,topP,rightP,bottomP])
             
-            cv2.rectangle(img,(top, left), (bottom, right),(255,0,0),2)
+            # cv2.rectangle(img,(top, left), (bottom, right),(255,0,0),2)
             
             
         queue_data = {
@@ -70,4 +73,5 @@ def face_detection(queue, terminate):
         
     # Cleanup
     vid.release()
-    cv2.destroyAllWindows()
+
+    exit(0)

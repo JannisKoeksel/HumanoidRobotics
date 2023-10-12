@@ -68,10 +68,10 @@ def process_frame(frame):
     
   
 
-    face_encodings = face_recognition.face_encodings(rgb_small_frame,face_locations, model="small")
+    face_encodings = face_recognition.face_encodings(rgb_small_frame,face_locations, model="large")
 
 
-    label = "Unknown"
+    label = None
     if(len(face_encodings) == 0): return label
     face_encoding = face_encodings[0]
     # See if the face is a match for the known face(s)
@@ -86,8 +86,11 @@ def process_frame(frame):
     # Or instead, use the known face with the smallest distance to the new face
     face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
     best_match_index = np.argmin(face_distances)
+    name = -1
     if matches[best_match_index]:
-        name = known_face_names[best_match_index]
+        distance = face_distances[best_match_index]
+        if(distance < 0.6):
+            name = known_face_names[best_match_index]
 
     label = name
     return label
@@ -95,23 +98,29 @@ def process_frame(frame):
 
 def face_detect(queue_in,queue_out,terminate):
     while True:
+        time.sleep(0.001)
         if(terminate.value == 1):
             break
-        time.sleep(0.01)
+        # time.sleep(0.01)
         latest_data = None
-        while not queue_in.empty():
-            latest_data = queue_in.get()
+        while True:
+            try:
+                latest_data = queue_in.get(False)
+                # print("q",latest_data["frame_id"])
+            except:
+                break
         
         if(latest_data == None):
             continue
         
         frames = latest_data["frames"]
-            
+        frame_id = latest_data["frame_id"]
             
         labels = []
-        
+        # print("recognition frames:", len(frames))
         for frame in frames: 
             label = process_frame(frame)
             labels.append(label)
-
-        queue_out.put(labels)
+        # print("recognition labels:", len(labels))
+        # print("recognition frame id", frame_id)
+        queue_out.put({"labels":labels, "frame_id":frame_id})
