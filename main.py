@@ -35,7 +35,7 @@ if __name__ == "__main__":
     
     
     
-    
+    frame_id = 0
     while True: 
         time.sleep(0.01)
         if(event_loop_queue.empty()): continue
@@ -47,7 +47,7 @@ if __name__ == "__main__":
         
         
         frame = event_data["full_frame"]
-        
+        frame_id += 1
         # for face in event_data["faces"].faces.values():
         #     print(face.label)
             
@@ -79,9 +79,11 @@ if __name__ == "__main__":
                 pass
             
         stateData = {
-            "faces": event_data["faces"].faces
+            "faces": event_data["faces"].faces,
+            "frame": frame,
+            "frame_id": frame_id
         }
-            
+        
         handler_queue.put(stateData)
         
     cv2.destroyAllWindows()
