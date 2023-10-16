@@ -43,7 +43,7 @@ def shoot():
     # time.sleep(2)
     # move_servo('G', 1694)  # change depending on laser pointer
     move_servo('E', 2050)
-    time.sleep(1.5)
+    time.sleep(1.2)
     move_servo('S', 1750)
     time.sleep(1.5)
     move_servo('G', 1700)  # 1694
