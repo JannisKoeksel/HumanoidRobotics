@@ -1,37 +1,56 @@
-from .behavior import * 
-from ..kinematics.hubert import move 
+from .state import StateMachine
 import time
 import cv2
 
 def idleHandler(state, stateData):
-    return "initialized"
+    print("Idle state started")
+    
+    
+    # stateData.move("B", 80)
+    # time.sleep(2)
+    # stateData.move("B", -30)
+    # time.sleep(2)
+    # stateData.move("B", 30)
+    # time.sleep(2)
+    # stateData.move("B", -30)
+    # time.sleep(2)
+    # stateData.move("B", 30)
+    # time.sleep(2)
+    
+    while True: 
+        data = stateData.get()
+        if( data["initialized"]): 
+            return "initialized"
+            
 
 
-idle.add_handler(idleHandler)
 def scanHandler(state, stateData):
     staticBackground = None
     framesBetweenMovement = 500
     b = 1
+    
     motion = 0
     sleep_time = 2
     a = 0
+
     while True:
         time.sleep(0.01)
         a += 1
         # Start of "scanning" behaviour
         data = stateData.get()
-        frame = data["frame"].values()
+   
+        frame = data["frame"]
         if (a % framesBetweenMovement == 0):
             staticBackground = None
             b += 1
             if (b % 2 == 1):
                 #Move Body to middle
-                move('B',1700) 
+                stateData.move_servo('B',1700) 
             elif (b % 4):
                 #Move Body to right/left
-                move('B',2100)
+                stateData.move_servo('B',2100)
             else:
-                move('B',1300)
+                stateData.move_servo('B',1300)
             #Get some better function here
             #We want the movement to finish so measure the time it takes
             #For Hubert to move into each position.
@@ -71,4 +90,39 @@ def scanHandler(state, stateData):
                 continue
             return "motion"
 
-scanning.add_handler(scanHandler)
+
+
+def faceDetectedHandler(state, stateData):
+    timeToShowFace = 500
+    timeToRecognizeFace = 500
+    
+    # Wait for a face to be detected
+    for _ in range(timeToShowFace):
+        data = stateData.get()
+        if len(data["faces"]) > 0:
+            # winsound.PlaySound("tts_sentences/found_you_processing_face.wav", winsound.SND_FILENAME)
+            break
+
+    # Try to recognize the detected face
+    for _ in range(timeToRecognizeFace):
+        data = stateData.get()
+        for face in data["faces"].values():
+            if face.label not in [None, -1]:
+                filePath = f"tts_sentences/hello_{face.label}.wav"
+                # winsound.PlaySound(filePath, winsound.SND_FILENAME)
+                return "face_known"
+
+    return "face_unknown"
+        
+
+
+# StateMachine.add_handler("check_identity",check_identity_handler)
+# StateMachine.add_handler("scanning",scanHandler)
+# StateMachine.add_handler("idle",idleHandler)
+
+def addHandlers():
+    StateMachine.add_handler("check_identity",faceDetectedHandler)
+    StateMachine.add_handler("scanning",scanHandler)
+    StateMachine.add_handler("idle",idleHandler)
+    
+    return StateMachine

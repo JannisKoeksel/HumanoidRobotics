@@ -4,17 +4,18 @@ from dataclasses import dataclass
 import time
 import cv2
 from states.state import StateMachine, StateData
-from states.behavior import idle
-import states.handler
+from states.handler import addHandlers
+from kinematics.hubert import move, move_servo
 
 def run(queue):
     
-    data = StateData(queue)
+    data = StateData(queue, move, move_servo)
+    
     StateMachine.stateData = data
     
     StateMachine.print()
-    
-    StateMachine(idle).run()
+    addHandlers()
+    StateMachine("idle").run()
     
     
 
@@ -26,6 +27,7 @@ if __name__ == "__main__":
     event_loop_p = multiprocessing.Process(target=start, args=(event_loop_queue,event_loop_quit))
     event_loop_p.start()
     
+    event_loop_queue.get()
     
     handler_queue = multiprocessing.Queue(maxsize=1)
     handler_quit = multiprocessing.Value('I', 0)
@@ -81,7 +83,9 @@ if __name__ == "__main__":
         stateData = {
             "faces": event_data["faces"].faces,
             "frame": frame,
-            "frame_id": frame_id
+            "frame_id": frame_id,
+            "move": move,
+            "initialized": True
         }
         
         handler_queue.put(stateData)

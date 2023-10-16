@@ -7,10 +7,7 @@ import cv2
 import os
 os.system("cls")
 
-# OBS!! must close monitor before running
-# if a position is given while the robot is still moving it wont recognize that command
 
-ser = serial.Serial('COM3', 57600)
 
 #               body    headPan  headTilt  shoulder  elbow  gripper
 body_parts    = ['B',   'P',    'T',     'S',      'E',   'G']
@@ -18,12 +15,13 @@ position_init = [1700,  1500,    2000,   2127.5,   1485,  1390] # E: 1650, S: 22
 position_min  = [560,   550,     950,    750,      550,   550]
 position_max  = [2330,  2340,    2400,   2200,     2400,  2150]
 
-def move(part, pos):
+def move(part, pos, ser):
+    print("moving", part, pos)
     pos_abs_val = correct_position(part,pos)
-    move_servo(part, pos_abs_val)
+    move_servo(part, pos_abs_val, ser)
 
 
-def move_servo(part, position):
+def move_servo(part, position, ser):
     ser.write(part.encode())
     ser.write(f'{position:.2f}\n'.encode())  # Send the position as a float with two decimal places
 
@@ -58,44 +56,44 @@ def move_to_init():
     for j, servo in enumerate(body_parts):
         move_servo(servo, position_init[j])
 
-while True:
+# while True:
 
-    choice = input("Enter 'B', 'P', 'T', 'S', 'E' or 'G' for part, 'shoot', 'scan', 'init' or 'close': ")
+#     choice = input("Enter 'B', 'P', 'T', 'S', 'E' or 'G' for part, 'shoot', 'scan', 'init' or 'close': ")
 
-    if choice == 'close':
-        move_to_init()
-        print('Run is over.')
-        break
-    elif choice == 'shoot':
-        shoot()
-        print('You are shot!')
-        continue
-    elif choice == 'scan':  # this is just to build on for when we can integrate the movement detection
-        for i in range(0,10):  # change this to a while and add a break in each position if movement is detected
-            print(i)
-            if i%4 == 0:
-                move_servo('B', position_max[0]-200)
-                time.sleep(3)
-            elif i%2 == 0:
-                move_servo('B', position_min[0]+200)
-                time.sleep(3)
-            else:
-                move_servo('B', position_init[0])
-                time.sleep(3)
-        continue
-    elif choice == 'init':
-        move_to_init()
-        continue
-    elif choice not in body_parts:
-        print('Not a valid input. Try again.')
-        continue
+#     if choice == 'close':
+#         move_to_init()
+#         print('Run is over.')
+#         break
+#     elif choice == 'shoot':
+#         shoot()
+#         print('You are shot!')
+#         continue
+#     elif choice == 'scan':  # this is just to build on for when we can integrate the movement detection
+#         for i in range(0,10):  # change this to a while and add a break in each position if movement is detected
+#             print(i)
+#             if i%4 == 0:
+#                 move_servo('B', position_max[0]-200)
+#                 time.sleep(3)
+#             elif i%2 == 0:
+#                 move_servo('B', position_min[0]+200)
+#                 time.sleep(3)
+#             else:
+#                 move_servo('B', position_init[0])
+#                 time.sleep(3)
+#         continue
+#     elif choice == 'init':
+#         move_to_init()
+#         continue
+#     elif choice not in body_parts:
+#         print('Not a valid input. Try again.')
+#         continue
 
-    position_choice = int(input("Enter rotation from center 0 (-100,100): "))
-    new_position = correct_position(choice, position_choice)
+#     position_choice = int(input("Enter rotation from center 0 (-100,100): "))
+#     new_position = correct_position(choice, position_choice)
 
-    print('Body part chosen: ', choice)
-    print('Position value chosen: ', new_position)
+#     print('Body part chosen: ', choice)
+#     print('Position value chosen: ', new_position)
 
-    move_servo(choice, new_position)
+#     move_servo(choice, new_position)
 
     
