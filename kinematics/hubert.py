@@ -18,6 +18,11 @@ position_init = [1700,  1500,    2000,   2127.5,   1485,  1390] # E: 1650, S: 22
 position_min  = [560,   550,     950,    750,      550,   550]
 position_max  = [2330,  2340,    2400,   2200,     2400,  2150]
 
+def move(part, pos):
+    pos_abs_val = correct_position(part,pos)
+    move_servo(part, pos_abs_val)
+
+
 def move_servo(part, position):
     ser.write(part.encode())
     ser.write(f'{position:.2f}\n'.encode())  # Send the position as a float with two decimal places
