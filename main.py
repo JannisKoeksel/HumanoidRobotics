@@ -3,7 +3,20 @@ import multiprocessing
 from dataclasses import dataclass
 import time
 import cv2
+from states.state import StateMachine, StateData
+from states.behavior import idle
+import states.handler
 
+def run(queue):
+    
+    data = StateData(queue)
+    StateMachine.stateData = data
+    
+    StateMachine.print()
+    
+    StateMachine(idle).run()
+    
+    
 
 
 if __name__ == "__main__":
@@ -12,6 +25,12 @@ if __name__ == "__main__":
     event_loop_quit = multiprocessing.Value('I', 0)
     event_loop_p = multiprocessing.Process(target=start, args=(event_loop_queue,event_loop_quit))
     event_loop_p.start()
+    
+    
+    handler_queue = multiprocessing.Queue(maxsize=1)
+    handler_quit = multiprocessing.Value('I', 0)
+    handler_p = multiprocessing.Process(target=run, args=(handler_queue,))
+    handler_p.start()
     
     
     
@@ -33,8 +52,7 @@ if __name__ == "__main__":
         #     print(face.label)
             
         for face in event_data["faces"].faces.values():
-            if(face.age > 2): continue
-            if(face.detections  < 5): continue
+            if(not face.detected ): continue
             label = face.label
             if(label == None):
                 label = "..."
@@ -53,6 +71,22 @@ if __name__ == "__main__":
             print("quit")
             break
         
+        
+        if not handler_queue.empty():
+            try:
+                _ = handler_queue.get()
+            except: 
+                pass
+            
+        stateData = {
+            "faces": event_data["faces"].faces
+        }
+            
+        handler_queue.put(stateData)
+        
     cv2.destroyAllWindows()
+    
+    handler_p.join()
+    event_loop_p.join()
     
     exit(0)

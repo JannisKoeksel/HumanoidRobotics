@@ -74,4 +74,4 @@ def face_detection(queue, terminate):
     # Cleanup
     vid.release()
 
-    exit(0)
+  

@@ -7,8 +7,11 @@ import time
 from dataclasses import dataclass
 from typing import Tuple, List, Dict
 
+
 DISTANCE_THRESHOLD = 40
-AGE_THRESHOLD = 50
+MAX_AGE_THRESHOLD = 50
+MIN_AGE_THRESHOLD = 10
+MAX_AGE_FOR_DETECTION = 2
 
 
 old_face_locs = None
@@ -32,10 +35,11 @@ class Face:
     age:int 
     frame: List[int]
     detections = 0
+    detected = False
     
     def update_center(self,x:int,y:int):
-        if(len(self.center) > AGE_THRESHOLD*4):
-            del self.center[0:AGE_THRESHOLD*3]
+        if(len(self.center) > MAX_AGE_THRESHOLD*4):
+            del self.center[0:MAX_AGE_THRESHOLD*3]
             
         self.center.append((x,y))
         
@@ -45,6 +49,10 @@ class Face:
         
         if(self.label == None or self.label == -1):
             self.label = label
+        
+        if(label != None and label != -1):
+            self.detected = True    
+        
             
     def get_distance(self,x:int,y:int):
         return euclidean_distance(x,y,*self.center[-1])
@@ -77,9 +85,18 @@ class FaceData:
         for key in self.faces.keys():
             old_face = self.faces[key]
             old_face.age += 1
-            if(old_face.age > AGE_THRESHOLD):
+            if(old_face.age > MAX_AGE_THRESHOLD):
                 to_delete.append(key)
                 
+            
+            if(old_face.detections > MIN_AGE_THRESHOLD):
+                old_face.detected = True
+                
+                
+            if(old_face.age > MAX_AGE_FOR_DETECTION):
+                old_face.detected = False
+                
+            
         #kill old 
         for key in to_delete: 
             self.faces.pop(key)
@@ -98,7 +115,23 @@ class FaceData:
         
         # print("faces:", len(face_locations), "labels:",  face_labels)
         
-       
+        #check for duplicates 
+        labels = set()
+        to_delete = set()
+        for key in self.faces.keys():
+            face = self.faces[key]
+            label = face.label
+            if(label in labels):
+                to_delete.add(label)
+            
+            if(label != -1 and label != None):
+                labels.add(label)
+            
+        for key in self.faces.keys():
+            face = self.faces[key]
+            label = face.label
+            if(label in to_delete):
+                face.label = None
         
         face_ids = []
         # process 
@@ -141,40 +174,6 @@ class FaceData:
                     print("Frame id", self.frame_id, "historic id ", labels_frame_id)
 
         self.frame_id += 1
-    # def face_tracker(face_locations):
-    #     global old_face_locs
-    #     face_locations_ids = []
-        
-    #     if(old_face_locs == None):
-    #         old_face_locs = face_locations
-    #         return []
-        
-    #     for face in face_locations:
-    #         x,y = get_center_point(face)
-    #         distances = []
-            
-    #         for old_face in old_face_locs:
-    #             old_id, old_x, old_y = old_face
-    #             distances.append((old_id, euclidean_distance(x,y,old_x,old_y)))
-                
-    #         min_d = 10000
-    #         min_id = -1
-    #         for fid,d in distances: 
-    #             if(d < min_d):
-    #                 min_d = d
-    #                 min_id = fid
-                
-    #         if(min_d < DISTANCE_THRESHOLD):
-    #             face_locations_ids.append(min_id)
-                
-    #         else: 
-    #             face_locations_ids.append(face_id)
-    #             face_id += 1
-                
-    #     old_face_locs = face_locations
-        
-    #     return face_locations_ids
-    
 
 
 def start(queue, quit):
@@ -256,7 +255,8 @@ def start(queue, quit):
             face_recon_quit.value = 1
             face_quit.value = 1
             break
-
+    face_p.join()
+    face_recon_p.join()
 
 
     

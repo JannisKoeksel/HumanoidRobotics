@@ -1,6 +1,6 @@
 
 
-from state import State, StateMashie
+from .state import State, StateMachine
 
 
 idle = State("idle")
@@ -42,7 +42,7 @@ fight >> idle | "person_leaves"
 
 
 
-StateMashie.print()
+# StateMachine.print()
 
-print(StateMashie(idle).run())
+# print(StateMashie(idle).run())
 
