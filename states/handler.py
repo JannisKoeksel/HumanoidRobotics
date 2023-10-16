@@ -2,6 +2,7 @@ from .behavior import *
 from ..kinematics.hubert import move 
 import time
 import cv2
+import winsound
 
 def idleHandler(state, stateData):
     return "initialized"
@@ -72,3 +73,24 @@ def scanHandler(state, stateData):
             return "motion"
 
 scanning.add_handler(scanHandler)
+
+def faceDetectedHandler(state, stateData):
+    timeToShowFace = 500
+    timeToRecognizeFace = 500
+    recognized = False
+    #winsound.PlaySound("tts_sentences/show_yourself.wav", winsound.SND_FILENAME)
+    for i in range(timeToShowFace):
+      data = stateData.get()
+      if len(data["faces"]) > 0:
+          #winsound.PlaySound("tts_sentences/found_you_processing_face.wav", winsound.SND_FILENAME)
+          break
+    for i in range(timeToRecognizeFace):
+      data = stateData.get()
+      for face in data["faces"].values():
+          if face.label != "UNKNOWN" or "...":
+              filePath = f"tts_sentences/hello_{face.label}.wav"
+              #winsound.PlaySound(filePath, winsound.SND_FILENAME)
+              return "face_known"
+    return "face_unknown"
+          
+check_identity.add_handler(faceDetectedHandler)
