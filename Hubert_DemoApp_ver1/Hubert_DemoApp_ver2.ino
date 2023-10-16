@@ -13,15 +13,15 @@ Servo gripper;
 //Init position of all servos
 const int servo_pins[] = {3, 5, 6, 9, 10, 11};
 
-const int pos_init[] = {1700, 1500, 2000, 2127.5, 1485, 1600}; // E: 1650, S: 2200
+const int pos_init[] = {1700, 1500, 2000, 2127.5, 1485, 1390}; // E: 1650, S: 2200, G: 1600
 int curr_pos[6];
 int new_servo_val[6];
-int new_pos[] = {1700, 1500, 2000, 2127.5, 1485, 1600};
+int new_pos[] = {1700, 1500, 2000, 2127.5, 1485, 1390};
 
 const int pos_min[] = {560, 550, 950, 750, 550, 550};
 const int pos_max[] = {2330, 2340, 2400, 2200, 2400, 2150};
 
-const int pos_move[] = {2200, 1000, 1500, 1100, 2300, 1600};
+// const int pos_move[] = {2200, 1000, 1500, 1100, 2300, 1600};
 
 char body_parts[] = {'B','P', 'T', 'S', 'E', 'G'};
 
@@ -46,6 +46,8 @@ void servo_body_ex() {
   delay(10);
 
   curr_pos[0] = now;
+
+  sendServoPosition();
 }
 
 void servo_neck_pan() {
@@ -185,16 +187,6 @@ void setup() {
 	delay(2000);
 }
 
-// void move_to_init() {
-//   // new_pos[6] = pos_init[6];
-//   new_pos[0] = pos_init[0];
-//   new_pos[1] = pos_init[1];
-//   new_pos[2] = pos_init[2];
-//   new_pos[3] = pos_init[3];
-//   new_pos[4] = pos_init[4];
-//   new_pos[5] = pos_init[5];
-// }
-
 void move_one(const char X, const int position) {
   if (X == 'B') { new_pos[0] = position; }
   else if (X == 'P') { new_pos[1] = position; } 
@@ -203,6 +195,12 @@ void move_one(const char X, const int position) {
   else if (X == 'E') { new_pos[4] = position; }
   else if (X == 'G') { new_pos[5] = position; }
 }
+
+void sendServoPosition() {
+  Serial.print(body.read());
+  Serial.println(); // Add a newline character to indicate the end of the data
+}
+
 
 void loop() {
   
