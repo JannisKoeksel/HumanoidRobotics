@@ -1,9 +1,18 @@
 
 from typing import Any, List,Type, Callable, Dict
 
-class StateMashie:
-    allStates: Dict[str,'State'] = []
+class StateData:
     
+    def __init__(self, queue) -> None:
+        self.queue = queue
+    
+    def get(self):
+        print("State Get")
+        return self.queue.get()
+
+class StateMachine:
+    allStates: Dict[str,'State'] = {}
+    stateData: 'StateData'
     activeState: 'State'
     def __init__(self, initial_state:'State') -> None:
         self.activate(initial_state)
@@ -17,7 +26,7 @@ class StateMashie:
             # print("running handler", self.activeState.name)
             transition = self.activeState.run_handler()
             if(transition == None):
-                print("stopping StateMashie")
+                print("stopping StateMachine")
                 return False
             # print("transition is:",transition)
             # print("handler returned:", transition.name)
@@ -26,8 +35,8 @@ class StateMashie:
             
     def print() :
         
-        for state in StateMashie.allStates.keys():
-            StateMashie.allStates["state"].print()
+        for state in StateMachine.allStates.keys():
+            StateMachine.allStates[state].print()
 
 class Transition:
     
@@ -63,19 +72,19 @@ class State:
     def __init__(self, name:str) -> None:
         self.name = name
         self.transitions = {}
-        StateMashie.allStates[name] = self
+        StateMachine.allStates[name] = self
         
         
     def __rshift__(self,other:'State'):
         return Transition(self,other)   
     
-    def add_handler(self,handler:Callable[['State'], str]):
+    def add_handler(self,handler:Callable[['State', 'StateData'], str]):
         
         self.handler = handler
         
     def run_handler(self)-> Transition|None:
         # print("running handler for", self.name)
-        res = self.handler(self)
+        res = self.handler(self, StateMachine.stateData)
     
         if(res):
             # print("res",res, "keys",self.transitions.keys())
@@ -92,7 +101,7 @@ class State:
         
         print(self.name)
         for key in self.transitions.keys():
-            print("    ", key, self.transitions[key])
+            print("    ", key)
   
 
 
@@ -104,4 +113,4 @@ class State:
 
 # idle >> scanning | "motion"
 
-# StateMashie.print()
+# StateMachine.print()
