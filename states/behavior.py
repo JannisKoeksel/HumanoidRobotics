@@ -14,10 +14,10 @@ check_identity = State("check_identity")
 entry_approved = State("entry_approved")
 
 
-idle >> scanning | "motion"
+idle >> scanning | "initialized"
 
 scanning >> idle | "no_detection"
-scanning >> check_identity | "face_detected"
+scanning >> check_identity | "motion"
 
 check_identity >> entry_forbidden | "face_unknown"
 check_identity >> entry_approved | "face_known"
