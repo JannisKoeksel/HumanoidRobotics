@@ -92,6 +92,7 @@ def entry_approved_handler(username):
 
         audio_thread = threading.Thread(target=winsound.PlaySound, args=("tts_sentences/thinking_sound_quiet.wav", winsound.SND_FILENAME,))
         audio_thread.start()
+
         wav_data = audio.get_wav_data()
         with open('output.wav', 'wb') as f:
             f.write(wav_data)
@@ -119,28 +120,41 @@ def entry_approved_handler(username):
 def process_password_handler():
      #Add face tracking?
 
-    with sr.Microphone() as source:
-        winsound.PlaySound("tts_sentences/say_the_super_secret_password.wav", winsound.SND_FILENAME)
-        winsound.Beep(1000,100)
-        audio = sr.Recognizer().listen(source)
-    print("speech done")
+    n_attemps = 2
+    attemps = 1
+    while attemps <= n_attemps:
 
-    wav_data = audio.get_wav_data()
-    with open('output.wav', 'wb') as f:
-        f.write(wav_data)
-    audio_file= open("output.wav", "rb")
+        with sr.Microphone() as source:
+            if attemps == 1:
+                winsound.PlaySound("tts_sentences/say_the_super_secret_password.wav", winsound.SND_FILENAME)
+            winsound.Beep(1000,100)
+            audio = sr.Recognizer().listen(source)
+        print("speech done")
 
-    transcript = openai.Audio.transcribe("whisper-1", audio_file, api_key=API_KEY)
-    print(transcript['text'])
-    results = transcript['text']
+        wav_data = audio.get_wav_data()
+        with open('output.wav', 'wb') as f:
+            f.write(wav_data)
+        audio_file= open("output.wav", "rb")
 
-    if results.lower().replace(" ", "").replace(".", "") == "banana":
-        engine.say("welcome")
-    elif "banana" in results.lower():
-        engine.say("say only the password, nothing else.")
-    else:
-        engine.say("bullshit")
-    engine.runAndWait()
+        transcript = openai.Audio.transcribe("whisper-1", audio_file, api_key=API_KEY)
+        print(transcript['text'])
+        results = transcript['text']
+
+        if results.lower().replace(" ", "").replace(".", "") == "banana":
+            engine.say("welcome")
+        elif "banana" in results.lower():
+            if attemps == 1:
+                engine.say("say only the password, nothing else. I'll give you one more try")
+            else:
+                engine.say("The password is not correct. Acces denied.")
+        else:
+            if attemps == 1:
+                engine.say("That's not the password. I'll give you one more try")
+            else:
+                engine.say("The password is not correct. Acces denied.")
+        engine.runAndWait()
+
+        attemps += 1
 
 process_password_handler()
 
