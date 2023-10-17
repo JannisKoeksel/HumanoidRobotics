@@ -177,11 +177,11 @@ def defendHandler(state, stateData):
         data = stateData.get()
         faces = data["faces"].values()
 
-        position = data["position"].values()
-        bodyPos = position.bodyPos
+        
+        bodyPos = stateData.position["B"]
         #update body and headpos
         #If hubert can follow the movement altogether
-        if bodyPos > 2300 or bodyPos < 600:
+        if bodyPos > 2200 or bodyPos < 700:
             return "person_leaves" 
         #If the person is moving a bit too quickly
         elif len(faces == 0):
