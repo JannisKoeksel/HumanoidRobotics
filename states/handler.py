@@ -1,7 +1,7 @@
 from .state import StateMachine
 import time
 import cv2
-
+import numpy as np
 import openai
 import speech_recognition as sr
 
@@ -19,7 +19,7 @@ from langchain.prompts import MessagesPlaceholder
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import LLMChain
 
-
+from .speech import create_current_message
 API_KEY = "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"
 
 
@@ -135,27 +135,36 @@ def scanHandler(state, stateData):
             return "motion"
 
 
-
 def faceDetectedHandler(state, stateData):
-    timeToShowFace = 500
-    timeToRecognizeFace = 500
-    
-    # Wait for a face to be detected
-    for _ in range(timeToShowFace):
+    timeToShowFace = 3
+    timeToRecognizeFace = 5
+    detected = False
+    winsound.PlaySound("tts_sentences/show_yourself.wav", winsound.SND_FILENAME)
+    time1 = np.datetime64('now')
+    diff = 0
+    while (diff < timeToShowFace):
+        time2 = np.datetime64('now')
+        diff = (np.datetime64(time2)-np.datetime64(time1))/(np.timedelta64(1,'s'))
+        #for i in range(timeToShowFace):
         data = stateData.get()
         if len(data["faces"]) > 0:
-            # winsound.PlaySound("tts_sentences/found_you_processing_face.wav", winsound.SND_FILENAME)
-            break
-
-    # Try to recognize the detected face
-    for _ in range(timeToRecognizeFace):
-        data = stateData.get()
-        for face in data["faces"].values():
-            if face.label not in [None, -1]:
-                filePath = f"tts_sentences/hello_{face.label}.wav"
-                # winsound.PlaySound(filePath, winsound.SND_FILENAME)
-                return "face_known"
-
+          detected = True
+          winsound.PlaySound("tts_sentences/found_you.wav", winsound.SND_FILENAME)
+          winsound.PlaySound("tts_sentences/processing_face.wav", winsound.SND_FILENAME)
+          break
+    if detected == False:
+        return "no_face"
+    diff = 0
+    time1 = np.datetime64('now')
+    while (diff < timeToRecognizeFace):
+      time2 = np.datetime64('now')
+      diff = (np.datetime64(time2)-np.datetime64(time1))/(np.timedelta64(1,'s'))
+      data = stateData.get()
+      for face in data["faces"].values():
+          if face.label not in [None, -1]:
+              filePath = f"tts_sentences/hello_{face.label}.wav"
+              winsound.PlaySound(filePath, winsound.SND_FILENAME)
+              return "face_known"
     return "face_unknown"
         
 
@@ -164,12 +173,15 @@ def processPasswordHandler(state, stateData):
     n_attempts = 2
     attempts = 1
     while attempts <= n_attempts:
-
+        print("PWD attempt", attempts, "start")
         with sr.Microphone() as source:
             if attempts == 1:
                 winsound.PlaySound("tts_sentences/say_the_super_secret_password.wav", winsound.SND_FILENAME)
             winsound.Beep(1000,100)
-            audio = sr.Recognizer().listen(source)
+            recognizer = sr.Recognizer()
+            recognizer.dynamic_energy_threshold = False
+            recognizer.energy_threshold = 500
+            audio = recognizer.listen(source,phrase_time_limit=5)
         print("speech done")
 
         wav_data = audio.get_wav_data()
@@ -203,14 +215,15 @@ def processPasswordHandler(state, stateData):
 
 
 def entryApprovedHandler(state, stateData):
-
+    print("entry approved")
     username = "human" #a human
     data = stateData.get()
-    faces = data["faces"].values()
+    faces = list(data["faces"].values())
     if 0 < len(faces):
-        if faces[0] not in [-1, None]:
+        print("entry Approved handler NAME:", faces[0].label)
+        if faces[0].label not in [-1, None]:
             username = faces[0].label
-
+    print("entryApprovedHandler", "username",username)
     if username == "human":
         system_message = "You are a guard robot named Hubert with the purpose of surveilling Area 51. " \
                          "You are talking to a {user} who is authorized personnel. " \
@@ -246,11 +259,17 @@ def entryApprovedHandler(state, stateData):
     winsound.PlaySound("current_message.wav", winsound.SND_FILENAME)
 
     while n_questions < max_questions:
+        print("entryApprovedHandler", "starting question loop ")
 
         with sr.Microphone() as source:
             print('listening')
             winsound.Beep(1000,100)
-            audio = sr.Recognizer().listen(source)
+            print("beep done")
+            recognizer = sr.Recognizer()
+            recognizer.dynamic_energy_threshold = False
+
+            audio = recognizer.listen(source,phrase_time_limit=7)
+            print("listening done")
         start= time.time()
 
         audio_thread = threading.Thread(target=winsound.PlaySound, args=("tts_sentences/thinking_sound_quiet.wav", winsound.SND_FILENAME,))
@@ -313,10 +332,47 @@ def follow(state, stateData):
 # StateMachine.add_handler("scanning",scanHandler)
 # StateMachine.add_handler("idle",idleHandler)
 
-def addHandlers():
-    StateMachine.add_handler("check_identity",faceDetectedHandler)
-    StateMachine.add_handler("scanning",follow)
-    StateMachine.add_handler("idle",idleHandler)
+def defendHandler(state, stateData):
+    winsound.PlaySound("tts_sentences/you_have_5_seconds_to_leave_the_area.wav", winsound.SND_FILENAME)
+    #time_stamp_start
+    stateData.move_servo('E', 2050)
+    time.sleep(1.2)
+    stateData.move_servo('S', 1750)
     
+    
+    timeToLeave = 5
+    time1 = np.datetime64('now')
+    diff = 0
+    while (diff < timeToLeave):
+        time2 = np.datetime64('now')
+        diff = (np.datetime64(time2)-np.datetime64(time1))/(np.timedelta64(1,'s'))
+        data = stateData.get()
+        faces = data["faces"].values()
+
+        
+        bodyPos = stateData.position["B"]
+        #update body and headpos
+        #If hubert can follow the movement altogether
+        if bodyPos > 2200 or bodyPos < 700:
+            return "person_leaves" 
+        #If the person is moving a bit too quickly
+        elif len(faces == 0):
+            return "person_leaves"
+        
+    stateData.move_servo('G', 1700)
+    time.sleep(5)
+    return "person_leaves"
+
+
+def addHandlers():
+    StateMachine.add_handler("idle",idleHandler)
+    StateMachine.add_handler("scanning",scanHandler)
+    StateMachine.add_handler("defend", defendHandler)
+    StateMachine.add_handler("process_pwd", processPasswordHandler)
+    StateMachine.add_handler("check_identity",faceDetectedHandler)
+    StateMachine.add_handler("entry_approved",entryApprovedHandler)
+    
+    # StateMachine.add_handler("entry_forbidden")
+
     
     return StateMachine

@@ -9,6 +9,7 @@
         "openai",
         "pydub",
         "pyttsx",
+        "sikta",
         "websockets",
         "xyxy",
         "YOLO"

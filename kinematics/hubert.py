@@ -24,6 +24,9 @@ def move(part, pos, ser):
     return (part, pos_abs_val)
 
 
+
+
+
 def move_servo(part, pos, ser):
     print("SER start")
     if(ser.out_waiting > 50):
