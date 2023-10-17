@@ -1,21 +1,33 @@
 
-from typing import Any, List,Type, Callable, Dict
+from typing import Callable, Dict
+import serial
+import  time 
 
 class StateData:
     
-    def __init__(self, queue) -> None:
+    
+    def __init__(self, queue, move, move_servo) -> None:
         self.queue = queue
+        self.ser = serial.Serial('COM3', 57600)
+        self.move_func = move
+        self.move_servo_func = move_servo
     
     def get(self):
-        print("State Get")
         return self.queue.get()
+    
+    def move(self,part,val):
+        self.move_func(part,val, self.ser)
+        
+    def move_serve(self,part,val):
+        self.move_servo_func(part,val,self.ser)
+        
 
 class StateMachine:
     allStates: Dict[str,'State'] = {}
     stateData: 'StateData'
     activeState: 'State'
-    def __init__(self, initial_state:'State') -> None:
-        self.activate(initial_state)
+    def __init__(self, initial_state:str) -> None:
+        self.activate(StateMachine.allStates[initial_state])
     
     def activate(self,state:'State'):
         # print("current State:", state.name)
@@ -37,6 +49,9 @@ class StateMachine:
         
         for state in StateMachine.allStates.keys():
             StateMachine.allStates[state].print()
+            
+    def add_handler(state_key, handler):
+        StateMachine.allStates[state_key].add_handler(handler)
 
 class Transition:
     
@@ -79,13 +94,17 @@ class State:
         return Transition(self,other)   
     
     def add_handler(self,handler:Callable[['State', 'StateData'], str]):
-        
+        print(self.name, "adding handler")
         self.handler = handler
         
     def run_handler(self)-> Transition|None:
         # print("running handler for", self.name)
-        res = self.handler(self, StateMachine.stateData)
-    
+        
+        try:
+            res = self.handler(self, StateMachine.stateData)
+        except Exception as e: 
+            print(self.name , e)
+            exit(1)
         if(res):
             # print("res",res, "keys",self.transitions.keys())
             transition = self.transitions[res]

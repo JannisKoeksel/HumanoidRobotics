@@ -9,7 +9,7 @@ def face_detection(queue, terminate):
     import cv2
     model = YOLO("Vision\Models\yolov8n-face.pt")
     #Start recording, outside of for loop since first iteration will use CPU and will therefore be slow.
-    vid = cv2.VideoCapture(0)
+    vid = cv2.VideoCapture(1)
     ret, img = vid.read()
     #Extracting results
     results = model(img)
