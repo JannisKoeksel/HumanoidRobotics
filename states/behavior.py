@@ -35,7 +35,7 @@ add_identity >> idle | "person_leaves"
 defend >> fight | "person_stays"
 defend >> scanning | "person_leaves"
 
-entry_approved >> idle | "waiting_for_entry"
+entry_approved >> scanning | "waiting_for_entry"
 
 fight >> idle | "person_leaves"
 

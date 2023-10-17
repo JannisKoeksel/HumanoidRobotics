@@ -59,6 +59,7 @@ def idleHandler(state, stateData):
 
 
 idle.add_handler(idleHandler)
+
 def scanHandler(state, stateData):
     staticBackground = None
     framesBetweenMovement = 200
@@ -128,8 +129,7 @@ def faceDetectedHandler(state, stateData):
     timeToShowFace = 3
     timeToRecognizeFace = 5
     detected = False
-    recognized = False
-    #winsound.PlaySound("tts_sentences/show_yourself.wav", winsound.SND_FILENAME)
+    winsound.PlaySound("tts_sentences/show_yourself.wav", winsound.SND_FILENAME)
     time1 = np.datetime64('now')
     diff = 0
     while (diff < timeToShowFace):
@@ -139,7 +139,8 @@ def faceDetectedHandler(state, stateData):
         data = stateData.get()
         if len(data["faces"]) > 0:
           detected = True
-          #winsound.PlaySound("tts_sentences/found_you_processing_face.wav", winsound.SND_FILENAME)
+          winsound.PlaySound("tts_sentences/found_you.wav", winsound.SND_FILENAME)
+          winsound.PlaySound("tts_sentences/processing_face.wav", winsound.SND_FILENAME)
           break
     if detected == False:
         return "no_face"
@@ -149,24 +150,22 @@ def faceDetectedHandler(state, stateData):
       time2 = np.datetime64('now')
       diff = (np.datetime64(time2)-np.datetime64(time1))/(np.timedelta64(1,'s'))
       data = stateData.get()
-      #Add face tracking here
       for face in data["faces"].values():
-          #Add timestamp for termination?
-          if face.label != None or -1:
+          if face.label not in [None, -1]:
               filePath = f"tts_sentences/hello_{face.label}.wav"
-              #winsound.PlaySound(filePath, winsound.SND_FILENAME)
+              winsound.PlaySound(filePath, winsound.SND_FILENAME)
               return "face_known"
     return "face_unknown"
           
 check_identity.add_handler(faceDetectedHandler)
-
-def fightHandler(state, stateData):
-    timeToShoot = 3
+#Not needed below?
+#def fightHandler(state, stateData):
+#    timeToShoot = 3
     #winsound.Playsound("tts_sentences/access_denied.wav", winsound.SND_FILENAME)
-    time.sleep(timeToShoot)
+#    time.sleep(timeToShoot)
     #winsound.Playsound("tts_sentences/shoot.wav",winsound.SND_FILENAME)
 def defendHandler(state, stateData):
-    #winsound.PlaySound("tts_sentences/you_have_5_seconds_to_leave_the_area.wav", winsound.SND_FILENAME)
+    winsound.PlaySound("tts_sentences/you_have_5_seconds_to_leave_the_area.wav", winsound.SND_FILENAME)
     #time_stamp_start
     sikta()
     timeToLeave = 5
@@ -176,11 +175,20 @@ def defendHandler(state, stateData):
         time2 = np.datetime64('now')
         diff = (np.datetime64(time2)-np.datetime64(time1))/(np.timedelta64(1,'s'))
         data = stateData.get()
-        [newBodyPos,newHeadPos] = faceTracking(data)
+        faces = data["faces"].values()
+
+        position = data["position"].values()
+        bodyPos = position.bodyPos
         #update body and headpos
-        if newBodyPos > 2300 or newBodyPos < 600:
+        #If hubert can follow the movement altogether
+        if bodyPos > 2300 or bodyPos < 600:
             return "person_leaves" 
+        #If the person is moving a bit too quickly
+        elif len(faces == 0):
+            return "person_leaves"
     shoot()
+    time.sleep(5)
+    return "person_leaves"
 defend.add_handler(defendHandler)
 
 def process_password_handler():
