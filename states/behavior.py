@@ -23,7 +23,7 @@ check_identity >> scanning | "no_face"
 process_pwd >> defend | "pwd_wrong"
 process_pwd >> entry_approved | "pwd_correct"
 
-defend >> scanning | "person_leaves"
+defend >> idle | "person_leaves"
 
-entry_approved >> scanning | "waiting_for_entry"
+entry_approved >> idle | "waiting_for_entry"
 

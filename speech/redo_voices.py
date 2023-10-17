@@ -1,6 +1,9 @@
-from pydub import AudioSegment
-import pyttsx3
 import os
+import pyttsx3
+from pydub import AudioSegment
+
+# Directory path
+folder_path = 'tts_sentences/'
 
 
 engine = pyttsx3.init()
@@ -8,6 +11,9 @@ voices = engine.getProperty('voices')
 engine.setProperty('rate', 150) 
 engine.setProperty('voice', voices[1].id)
 
+# Loop through all the files in the folder
+
+        
 
 def detect_leading_silence(sound, silence_threshold=-50.0, chunk_size=10):
     trim_ms = 0 # ms
@@ -33,9 +39,11 @@ def create_tts_sentence(sentence):
     trimmed_audio = audio[start_trim:duration-end_trim]
     trimmed_audio.export(folder + sentence.replace(" ", "_").lower() + ".wav", format="wav")
     os.remove(filename)
-
-create_tts_sentence("show yourself")
-
-
-# Make function for creating a trimmmed sound_file out of a scentence
-# Hubert listens for "hey hubert. "
+    
+for filename in os.listdir(folder_path):
+    # Check if the file has the .wav extension
+    if filename.endswith('.wav'):
+        # Split the filename and the extension
+        name, extension = os.path.splitext(filename)
+        print(name)
+        create_tts_sentence(name.replace("_", " "))

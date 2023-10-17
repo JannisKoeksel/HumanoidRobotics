@@ -3,6 +3,7 @@ from typing import Callable, Dict
 import serial
 import  time 
 import traceback
+import numpy as np
 
 MAX_MOVEMENT_THRESHOLD = 5
 class StateData:
@@ -37,7 +38,7 @@ class StateData:
         
         
     def move_servo(self,part,pos):
-        print(part, pos)
+        # print(part, pos)
         part, pos = self.move_servo_func(part,int(pos),self.ser)
         self.position[part] = pos
         
@@ -49,7 +50,7 @@ class StateData:
     def follow(self,data):
         center_x, center_y = (240,320)
         
-        print("___")
+        # print("___")
         
         faces = data["faces"]
         if(len(faces) ==  0): 
@@ -65,13 +66,19 @@ class StateData:
         tilt = center_x - x 
         body =  y - center_y
     
-        print("body", body)
-        print("tilt", tilt)
+        # print("body", body)
+        # print("tilt", tilt)
         
         if(body**2 > 300):
             self.move_delta("B", body/10)
         if(tilt**2 > 300):
             self.move_delta("T", tilt/10)
+            
+    def wait(self,seconds):
+        start = np.datetime64("now",'s')
+        seconds = int(seconds)
+        while np.datetime64("now",'s') < start + np.timedelta64(seconds, "s"):
+            self.get()
 
 class StateMachine:
     allStates: Dict[str,'State'] = {}

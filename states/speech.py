@@ -3,10 +3,10 @@
 import pyttsx3
 from pydub import AudioSegment
 
-engine = pyttsx3.init()
-voices = engine.getProperty('voices')
-engine.setProperty('rate', 150) 
-engine.setProperty('voice', voices[1].id)
+# engine = pyttsx3.init()
+# voices = engine.getProperty('voices')
+# engine.setProperty('rate', 150) 
+# engine.setProperty('voice', voices[1].id)
 
 def detect_leading_silence(sound, silence_threshold=-50.0, chunk_size=10):
     trim_ms = 0 # ms
@@ -18,6 +18,11 @@ def detect_leading_silence(sound, silence_threshold=-50.0, chunk_size=10):
     return trim_ms
 
 def create_current_message(sentence):
+    engine = pyttsx3.init()
+    voices = engine.getProperty('voices')
+    engine.setProperty('rate', 150) 
+    engine.setProperty('voice', voices[1].id)
+    
     filename = "current_message.wav"
 
     engine.save_to_file(sentence, filename)

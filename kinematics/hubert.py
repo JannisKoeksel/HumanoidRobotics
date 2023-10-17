@@ -28,14 +28,14 @@ def move(part, pos, ser):
 
 
 def move_servo(part, pos, ser):
-    print("SER start")
+    # print("SER start")
     if(ser.out_waiting > 50):
         ser.reset_output_buffer()
     if(ser.in_waiting > 50):
         ser.reset_input_buffer()
     ser.write(part.encode())
     ser.write(f'{pos:.2f}\n'.encode())  # Send the position as a float with two decimal places
-    print("SER done")
+    # print("SER done")
     return (part,pos)
 
 def correct_position(part, perc_position):
