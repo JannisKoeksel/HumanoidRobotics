@@ -34,7 +34,7 @@ def create_tts_sentence(sentence):
     trimmed_audio.export(folder + sentence.replace(" ", "_").lower() + ".wav", format="wav")
     os.remove(filename)
 
-create_tts_sentence("Hold on, I need to get back to work. Goodbye!")
+create_tts_sentence("Access denied")
 
 
 # Make function for creating a trimmmed sound_file out of a scentence
