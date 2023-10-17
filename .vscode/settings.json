@@ -4,7 +4,11 @@
         "eventloop",
         "facerec",
         "imshow",
+        "langchain",
         "mmod",
+        "openai",
+        "pydub",
+        "pyttsx",
         "websockets",
         "xyxy",
         "YOLO"

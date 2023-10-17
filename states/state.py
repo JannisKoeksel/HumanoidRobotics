@@ -48,7 +48,7 @@ class StateMachine:
         self.activate(StateMachine.allStates[initial_state])
     
     def activate(self,state:'State'):
-        # print("current State:", state.name)
+        print("current State:", state.name)
         self.activeState = state
         
     def run(self):

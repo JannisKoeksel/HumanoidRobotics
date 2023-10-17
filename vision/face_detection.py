@@ -28,7 +28,7 @@ def face_detection(queue, terminate):
             #Extracts frame and OK condition
             ret, img = vid.read()
             if( not ret):
-                print("Frame Caputre failed")
+                print("Frame capture failed")
                 continue
             #Terminates the function
             if terminate.value == 1:
