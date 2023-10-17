@@ -219,7 +219,7 @@ def entryApprovedHandler(state, stateData):
 
     #easter egg
     stateData.wait(1)
-    winsound.PlaySound("tts_sentences/hold_on._i_should_acctually_get_back_to_work._goodbye.wav", winsound.SND_FILENAME)
+    winsound.PlaySound("tts_sentences/hold_on._i_should_actually_get_back_to_work._goodbye.wav", winsound.SND_FILENAME)
     
     stateData.wait(10)
     return "waiting_for_entry"

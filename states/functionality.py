@@ -108,7 +108,8 @@ def processPasswordHandler_get_username(stateData):
         if faces[0].label not in [-1, None]:
             username = faces[0].label
             
-            
+    return username
+        
 def defendHandler_pearson_has_left(stateData):
     timeToLeave = 20
     start = np.datetime64('now')
@@ -127,6 +128,7 @@ def defendHandler_pearson_has_left(stateData):
         
 def defendHandler_shoot_sound():
     
+    winsound.PlaySound("tts_sentences/your_time_is_up.wav", winsound.SND_FILENAME)
     winsound.PlaySound("tts_sounds/blaster.wav", winsound.SND_FILENAME)
    
     
