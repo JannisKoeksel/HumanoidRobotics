@@ -225,8 +225,13 @@ def process_password_handler():
         
 
 
-def entry_approved_handler(username):
+def entry_approved_handler(state, stateData):
     #Add face tracking?
+    data = stateData.get()
+    faces = data["faces"].values()
+    if 0 < len(faces):
+        if faces[0] not in [-1, None]:
+            username = faces[0].label
 
     n_questions = 3 #Should be 0
     max_questions = 2
