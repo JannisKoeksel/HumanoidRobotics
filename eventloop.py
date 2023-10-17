@@ -6,6 +6,7 @@ import cv2
 import time
 from dataclasses import dataclass
 from typing import Tuple, List, Dict
+import traceback
 
 
 DISTANCE_THRESHOLD = 40
@@ -193,68 +194,74 @@ def start(queue, quit):
     face_recon_p = multiprocessing.Process(target=identify_faces, args=(face_recon_queue_in,face_recon_queue_out ,face_recon_quit))
     face_recon_p.start()
     
-  
-    while True:
-        
-        # print("looping")
-        time.sleep(0.005)
-        
-        data_gatherer = {}
-        
-        
-        
-        latest_data = None
-        if(face_queue.empty()):
-            continue
-        
-        while not face_queue.empty():
-            latest_data = face_queue.get(False)
+    try:
+        while True:
             
-        data_gatherer["full_frame"] = latest_data["frame"]
-        # data_gatherer["face_coordinates"] = latest_data["faces"]
-        
-    
-        
-        # print(latest_data)
-        face_frames = []
-        for face in latest_data["faces"]:
-            face_frames.append(latest_data["frame"][face[0]:face[2],face[1]:face[3]])
+            # print("looping")
+            time.sleep(0.005)
             
-        # print("fID:", face_data.frame_id)
-        if(len(face_frames) > 0):
-            # print("put:", face_data.frame_id)
-            try:
+            data_gatherer = {}
+            
+            
+            
+            latest_data = None
+            if(face_queue.empty()):
+                continue
+            
+            while not face_queue.empty():
+                latest_data = face_queue.get(False)
                 
-                face_recon_queue_in.put_nowait({"frames":face_frames, "frame_id": face_data.frame_id})
-            except: 
-                # print("full")
-                pass
+            data_gatherer["full_frame"] = latest_data["frame"]
+            # data_gatherer["face_coordinates"] = latest_data["faces"]
+            
         
-        face_labels = None
-        recognition_frame_id = None
+            
+            # print(latest_data)
+            face_frames = []
+            for face in latest_data["faces"]:
+                face_frames.append(latest_data["frame"][face[0]:face[2],face[1]:face[3]])
+                
+            # print("fID:", face_data.frame_id)
+            if(len(face_frames) > 0):
+                # print("put:", face_data.frame_id)
+                try:
+                    
+                    face_recon_queue_in.put_nowait({"frames":face_frames, "frame_id": face_data.frame_id})
+                except: 
+                    # print("full")
+                    pass
+            
+            face_labels = None
+            recognition_frame_id = None
+            
+            try :
+                recognition_data = face_recon_queue_out.get_nowait()
+                face_labels = recognition_data["labels"]
+                recognition_frame_id = recognition_data["frame_id"]
+            except:
+                ...
+            
+            face_data.process_new_frame(latest_data["faces"], face_labels, recognition_frame_id)
+            data_gatherer["faces"] = face_data
+            
+            # data_gatherer["face_labels"] = face_labels
+            
+            # TODO voice 
+            
+            # print("event loop put", data_gatherer)
+            # print("put")
+            queue.put(data_gatherer)
+            
+            if quit.value == 1:
+                face_recon_quit.value = 1
+                face_quit.value = 1
+                break
+            
+    except Exception as e:
+        print("eventloop",e)
+        print(traceback.format_exc())
         
-        try :
-            recognition_data = face_recon_queue_out.get_nowait()
-            face_labels = recognition_data["labels"]
-            recognition_frame_id = recognition_data["frame_id"]
-        except:
-            ...
         
-        face_data.process_new_frame(latest_data["faces"], face_labels, recognition_frame_id)
-        data_gatherer["faces"] = face_data
-        
-        # data_gatherer["face_labels"] = face_labels
-        
-        # TODO voice 
-        
-        # print("event loop put", data_gatherer)
-        # print("put")
-        queue.put(data_gatherer)
-        
-        if quit.value == 1:
-            face_recon_quit.value = 1
-            face_quit.value = 1
-            break
     face_p.join()
     face_recon_p.join()
 

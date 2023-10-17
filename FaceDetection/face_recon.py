@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import dlib
 import time
-
+import traceback
 
 # This is a demo of running face recognition on live video from your webcam. It's a little more complicated than the
 # other example, but it includes some basic performance tweaks to make things run a lot faster:
@@ -97,30 +97,34 @@ def process_frame(frame):
 
 
 def face_detect(queue_in,queue_out,terminate):
-    while True:
-        time.sleep(0.001)
-        if(terminate.value == 1):
-            break
-        # time.sleep(0.01)
-        latest_data = None
+    try:
         while True:
-            try:
-                latest_data = queue_in.get(False)
-                # print("q",latest_data["frame_id"])
-            except:
+            time.sleep(0.001)
+            if(terminate.value == 1):
                 break
-        
-        if(latest_data == None):
-            continue
-        
-        frames = latest_data["frames"]
-        frame_id = latest_data["frame_id"]
+            # time.sleep(0.01)
+            latest_data = None
+            while True:
+                try:
+                    latest_data = queue_in.get(False)
+                    # print("q",latest_data["frame_id"])
+                except:
+                    break
             
-        labels = []
-        # print("recognition frames:", len(frames))
-        for frame in frames: 
-            label = process_frame(frame)
-            labels.append(label)
-        # print("recognition labels:", len(labels))
-        # print("recognition frame id", frame_id)
-        queue_out.put({"labels":labels, "frame_id":frame_id})
+            if(latest_data == None):
+                continue
+            
+            frames = latest_data["frames"]
+            frame_id = latest_data["frame_id"]
+                
+            labels = []
+            # print("recognition frames:", len(frames))
+            for frame in frames: 
+                label = process_frame(frame)
+                labels.append(label)
+            # print("recognition labels:", len(labels))
+            # print("recognition frame id", frame_id)
+            queue_out.put({"labels":labels, "frame_id":frame_id})
+    except Exception as e:
+        print("recognition",e)
+        print(traceback.format_exc())

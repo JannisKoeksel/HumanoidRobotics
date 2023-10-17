@@ -2,9 +2,19 @@
 from typing import Callable, Dict
 import serial
 import  time 
+import traceback
 
+MAX_MOVEMENT_THRESHOLD = 5
 class StateData:
-    
+
+    position = {
+        "B":1700,
+        "P":1500,
+        "T":2000,
+        "S":2130,
+        "E":1485,
+        "G":1390
+    }
     
     def __init__(self, queue, move, move_servo) -> None:
         self.queue = queue
@@ -16,11 +26,19 @@ class StateData:
         return self.queue.get()
     
     def move(self,part,val):
-        self.move_func(part,val, self.ser)
+        part, pos = self.move_func(part,val, self.ser)
+        self.position[part] = pos
         
-    def move_serve(self,part,val):
-        self.move_servo_func(part,val,self.ser)
         
+    def move_servo(self,part,pos):
+        print(part, pos)
+        part, pos = self.move_servo_func(part,int(pos),self.ser)
+        self.position[part] = pos
+        
+    def move_delta(self,part, pos):
+        current = self.position[part]
+        delta = max(min(pos, MAX_MOVEMENT_THRESHOLD ), -MAX_MOVEMENT_THRESHOLD)
+        self.move_servo(part, current + delta)
 
 class StateMachine:
     allStates: Dict[str,'State'] = {}
@@ -104,6 +122,7 @@ class State:
             res = self.handler(self, StateMachine.stateData)
         except Exception as e: 
             print(self.name , e)
+            print(traceback.format_exc())
             exit(1)
         if(res):
             # print("res",res, "keys",self.transitions.keys())

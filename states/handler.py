@@ -116,13 +116,42 @@ def faceDetectedHandler(state, stateData):
         
 
 
+def follow(state, stateData):
+    center_x, center_y = (240,320)
+    while True: 
+        time.sleep(0.05)
+        print("___")
+        data = stateData.get()
+        faces = data["faces"]
+        if(len(faces) ==  0): 
+            stateData.move("B", 0)
+            stateData.move("T", 0)
+            continue
+        
+        
+        face = list(faces.values())[0]
+        if( not face.detected) : continue
+        x, y = face.center[-1]
+        
+        tilt = center_x - x 
+        body =  y - center_y
+    
+        print("body", body)
+        print("tilt", tilt)
+        
+        if(body**2 > 300):
+            stateData.move_delta("B", body/10)
+        if(tilt**2 > 300):
+            stateData.move_delta("T", tilt/10)
+
 # StateMachine.add_handler("check_identity",check_identity_handler)
 # StateMachine.add_handler("scanning",scanHandler)
 # StateMachine.add_handler("idle",idleHandler)
 
 def addHandlers():
     StateMachine.add_handler("check_identity",faceDetectedHandler)
-    StateMachine.add_handler("scanning",scanHandler)
+    StateMachine.add_handler("scanning",follow)
     StateMachine.add_handler("idle",idleHandler)
+    
     
     return StateMachine

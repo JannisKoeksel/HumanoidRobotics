@@ -6,6 +6,7 @@ import cv2
 from states.state import StateMachine, StateData
 from states.handler import addHandlers
 from kinematics.hubert import move, move_servo
+import traceback
 
 def run(queue):
     
@@ -38,57 +39,62 @@ if __name__ == "__main__":
     
     
     frame_id = 0
-    while True: 
-        time.sleep(0.01)
-        if(event_loop_queue.empty()): continue
-        
-        event_data = event_loop_queue.get()
-        while not event_loop_queue.empty():
+    try:
+        while True: 
+            time.sleep(0.01)
+            if(event_loop_queue.empty()): continue
+            
             event_data = event_loop_queue.get()
+            while not event_loop_queue.empty():
+                event_data = event_loop_queue.get()
+                
             
-        
-        
-        frame = event_data["full_frame"]
-        frame_id += 1
-        # for face in event_data["faces"].faces.values():
-        #     print(face.label)
             
-        for face in event_data["faces"].faces.values():
-            if(not face.detected ): continue
-            label = face.label
-            if(label == None):
-                label = "..."
-            if(label == -1):
-                label = "Unknown"
+            frame = event_data["full_frame"]
+            frame_id += 1
+            # for face in event_data["faces"].faces.values():
+            #     print(face.label)
+                
+            for face in event_data["faces"].faces.values():
+                if(not face.detected ): continue
+                label = face.label
+                if(label == None):
+                    label = "..."
+                if(label == -1):
+                    label = "Unknown"
+                
+                cv2.putText(frame, label , (face.frame[1], face.frame[0]-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
+                cv2.rectangle(frame, (face.frame[1],face.frame[0]),(face.frame[3],face.frame[2]), (0,255,0), 3)
+                
+            # print("frame")
+            cv2.imshow("Cam",frame)
             
-            cv2.putText(frame, label , (face.frame[1], face.frame[0]-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
-            cv2.rectangle(frame, (face.frame[1],face.frame[0]),(face.frame[3],face.frame[2]), (0,255,0), 3)
+            wait_key = cv2.waitKey(1)
+            if wait_key & wait_key == ord('q'):
+                event_loop_quit.value = 1
+                print("quit")
+                break
             
-        # print("frame")
-        cv2.imshow("Cam",frame)
-        
-        wait_key = cv2.waitKey(1)
-        if wait_key & wait_key == ord('q'):
-            event_loop_quit.value = 1
-            print("quit")
-            break
-        
-        
-        if not handler_queue.empty():
-            try:
-                _ = handler_queue.get()
-            except: 
-                pass
             
-        stateData = {
-            "faces": event_data["faces"].faces,
-            "frame": frame,
-            "frame_id": frame_id,
-            "move": move,
-            "initialized": True
-        }
-        
-        handler_queue.put(stateData)
+            if not handler_queue.empty():
+                try:
+                    _ = handler_queue.get()
+                except: 
+                    pass
+                
+            stateData = {
+                "faces": event_data["faces"].faces,
+                "frame": frame,
+                "frame_id": frame_id,
+                "move": move,
+                "initialized": True
+            }
+            
+            handler_queue.put(stateData)
+            
+    except Exception as e:
+        print("eventloop",e)
+        print(traceback.format_exc())
         
     cv2.destroyAllWindows()
     
