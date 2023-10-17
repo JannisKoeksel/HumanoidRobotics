@@ -21,6 +21,7 @@ scanning >> check_identity | "motion"
 
 check_identity >> entry_forbidden | "face_unknown"
 check_identity >> entry_approved | "face_known"
+check_identity >> scanning | "no_face"
 
 entry_forbidden >> defend | "no_pwd"
 entry_forbidden >> process_pwd | "has_pwd"
@@ -32,9 +33,9 @@ add_identity >> idle | "identity_added"
 add_identity >> idle | "person_leaves"
 
 defend >> fight | "person_stays"
-defend >> idle | "person_leaves"
+defend >> scanning | "person_leaves"
 
-entry_approved >> idle | "waiting_for_entry"
+entry_approved >> scanning | "waiting_for_entry"
 
 fight >> idle | "person_leaves"
 

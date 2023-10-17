@@ -22,7 +22,6 @@ def move(part, pos):
     pos_abs_val = correct_position(part,pos)
     move_servo(part, pos_abs_val)
 
-
 def move_servo(part, position):
     ser.write(part.encode())
     ser.write(f'{position:.2f}\n'.encode())  # Send the position as a float with two decimal places
