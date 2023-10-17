@@ -34,7 +34,21 @@ def create_tts_sentence(sentence):
     trimmed_audio.export(folder + sentence.replace(" ", "_").lower() + ".wav", format="wav")
     os.remove(filename)
 
-create_tts_sentence("Access denied")
+create_tts_sentence("Hold on. I should acctually get back to work. Goodbye")
+
+        #     engine.say("Acces granted. Welcome")
+        #     attemps = 3 #return
+        # elif "banana" in results.lower():
+        #     if attemps == 1:
+        #         engine.say("Say only the password, nothing else. I'll give you one more try")
+        #     else:
+        #         engine.say("The password is incorrect. Acces denied")
+        # else:
+        #     if attemps == 1:
+        #         engine.say("That's not the password. I'll give you one more try")
+        #     else:
+        #         engine.say("The password is incorrect. Acces denied.")
+        # engine.runAndWait()
 
 
 # Make function for creating a trimmmed sound_file out of a scentence
