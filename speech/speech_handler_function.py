@@ -49,8 +49,12 @@ voices = engine.getProperty('voices')
 engine.setProperty('rate', 150) 
 engine.setProperty('voice', voices[1].id)
 
-
+start = time.time()
 chat = ChatOpenAI(openai_api_key=API_KEY, model_name="gpt-3.5-turbo", temperature=0.9)
+end = time.time()
+
+print('chat' + str(end - start))
+start = time.time()
 
 prompt = ChatPromptTemplate(
     input_variables=['user', 'chat_history', 'question'],
@@ -63,13 +67,26 @@ prompt = ChatPromptTemplate(
         HumanMessagePromptTemplate.from_template("{question}")
     ]
 )
+end = time.time()
+
+
+print('promt' + str(end - start))
+start = time.time()
+
 memory = ConversationBufferMemory(memory_key="chat_history", input_key='question', return_messages=True)
+end = time.time()
+
+print('memory' + str(end - start))
+start = time.time()
 
 conv_chain = LLMChain(
     llm=chat,
     prompt=prompt,
     memory=memory
 )
+end = time.time()
+
+print('chain' + str(end - start))
 
 
 # username = "Kevin"
@@ -157,5 +174,5 @@ def process_password_handler():
 
         attemps += 1
 
-process_password_handler()
+#process_password_handler()
 

@@ -191,9 +191,8 @@ def defendHandler(state, stateData):
     return "person_leaves"
 defend.add_handler(defendHandler)
 
-def process_password_handler():
+def processPasswordHandler(state, stateData):
      #Add face tracking?
-
     n_attemps = 2
     attemps = 1
     while attemps <= n_attemps:
@@ -215,33 +214,64 @@ def process_password_handler():
         results = transcript['text']
 
         if results.lower().replace(" ", "").replace(".", "") == "banana":
-            engine.say("welcome")
-            attemps = 3 #return
+            winsound.PlaySound("tts_sentences/acces_granted._welcome.wav", winsound.SND_FILENAME)
+            return "pwd_correct"
+    
         elif "banana" in results.lower():
             if attemps == 1:
-                engine.say("say only the password, nothing else. I'll give you one more try")
+                winsound.PlaySound("tts_sentences/say_only_the_password,_nothing_else._i'll_give_you_one_more_try.wav", winsound.SND_FILENAME)
             else:
-                engine.say("The password is not correct. Acces denied.")
+                winsound.PlaySound("tts_sentences/the_password_is_incorrect._acces_denied.wav", winsound.SND_FILENAME)
+
         else:
             if attemps == 1:
-                engine.say("That's not the password. I'll give you one more try")
+                winsound.PlaySound("tts_sentences/that's_not_the_password._i'll_give_you_one_more_try.wav", winsound.SND_FILENAME)
             else:
-                engine.say("The password is not correct. Acces denied.")
-        engine.runAndWait()
-
-        attemps += 1
+                winsound.PlaySound("tts_sentences/the_password_is_incorrect._acces_denied.wav", winsound.SND_FILENAME)
         
+        attemps += 1
+    return "pwd_wrong"
+process_pwd.add_handler(processPasswordHandler)
 
 
-def entry_approved_handler(state, stateData):
-    #Add face tracking?
+def entryApprovedHandler(state, stateData):
+
+    username = "human" #a human
     data = stateData.get()
     faces = data["faces"].values()
     if 0 < len(faces):
         if faces[0] not in [-1, None]:
             username = faces[0].label
 
-    n_questions = 3 #Should be 0
+    if username == "human":
+        system_message = "You are a guard robot named Hubert with the purpose of surveilling Area 51. " \
+                         "You are talking to a {user} who is authorized personnel. " \
+                         "The conversation started by you asking the {user} how they are doing. " \
+                         "You always answer in English regardless of what language a question was told."
+    else:
+        system_message = "You are a guard robot named Hubert with the purpose of surveilling Area 51. " \
+                         "You are talking to {user} who is authorized personnel. " \
+                         "The conversation started by you asking {user} how they are doing. " \
+                         "You always answer in English regardless of what language a question was told."
+
+    prompt = ChatPromptTemplate(
+        input_variables=['user', 'chat_history', 'question'],
+        messages=[
+            SystemMessagePromptTemplate.from_template(system_message),
+            # The `variable_name` here is what must align with memory
+            MessagesPlaceholder(variable_name="chat_history"),
+            HumanMessagePromptTemplate.from_template("{question}")
+        ]
+    )
+    memory = ConversationBufferMemory(memory_key="chat_history", input_key='question', return_messages=True)
+
+    conv_chain = LLMChain(
+        llm=chat,
+        prompt=prompt,
+        memory=memory
+    )
+
+    n_questions = 0 #Should be 0
     max_questions = 2
 
     create_current_message(f"Hello {username}, how is it going?")
@@ -280,4 +310,6 @@ def entry_approved_handler(state, stateData):
 
         n_questions += 1
 
-    winsound.PlaySound("tts_sentences/hold_on,_i_need_to_get_back_to_work._goodbye!.wav", winsound.SND_FILENAME)
+    winsound.PlaySound("tts_sentences/hold_on._i_should_acctually_get_back_to_work._goodbye.wav", winsound.SND_FILENAME)
+    return "waiting_for_entry"
+entry_approved.add_handler(entryApprovedHandler)
