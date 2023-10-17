@@ -16,6 +16,8 @@ class StateData:
         "G":1390
     }
     
+    should_follow = True
+    
     def __init__(self, queue, move, move_servo) -> None:
         self.queue = queue
         self.ser = serial.Serial('COM3', 57600)
@@ -23,7 +25,11 @@ class StateData:
         self.move_servo_func = move_servo
     
     def get(self):
-        return self.queue.get()
+        data = self.queue.get()
+        if(self.should_follow):
+            self.follow(data)
+            
+        return data
     
     def move(self,part,val):
         part, pos = self.move_func(part,val, self.ser)
@@ -39,6 +45,33 @@ class StateData:
         current = self.position[part]
         delta = max(min(pos, MAX_MOVEMENT_THRESHOLD ), -MAX_MOVEMENT_THRESHOLD)
         self.move_servo(part, current + delta)
+        
+    def follow(self,data):
+        center_x, center_y = (240,320)
+        
+        print("___")
+        
+        faces = data["faces"]
+        if(len(faces) ==  0): 
+            self.move("B", 0)
+            self.move("T", 0)
+            return 
+        
+        
+        face = list(faces.values())[0]
+        if( not face.detected) : return
+        x, y = face.center[-1]
+        
+        tilt = center_x - x 
+        body =  y - center_y
+    
+        print("body", body)
+        print("tilt", tilt)
+        
+        if(body**2 > 300):
+            self.move_delta("B", body/10)
+        if(tilt**2 > 300):
+            self.move_delta("T", tilt/10)
 
 class StateMachine:
     allStates: Dict[str,'State'] = {}
