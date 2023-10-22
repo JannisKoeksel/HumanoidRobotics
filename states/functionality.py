@@ -49,7 +49,6 @@ def faceDetectionHandler_recognized_face(stateData):
         
         for face in data["faces"].values():
             if face.label not in [None, -1]:
-                
                 return True
             
     winsound.PlaySound("tts_sentences/face_not_recognized.wav", winsound.SND_FILENAME)
@@ -104,9 +103,10 @@ def processPasswordHandler_get_username(stateData):
     data = stateData.get()
     faces = list(data["faces"].values())
     if (len(faces) != 0):
-        print("entry Approved handler NAME:", faces[0].label)
-        if faces[0].label not in [-1, None]:
-            username = faces[0].label
+        
+        for face in faces: 
+            if face.label not in [-1, None]:
+                return face.label
             
     return username
         

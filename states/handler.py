@@ -18,6 +18,7 @@ def idleHandler(state, stateData):
     
     stateData.move("S",0)
     stateData.move("E",5)
+    stateData.move("T",10)
     stateData.move_servo("G",1390)
     
     # stateData.move("B", 80)
@@ -150,7 +151,7 @@ def processPasswordHandler(state, stateData):
         print(transcript['text'])
         results = transcript['text']
 
-        if results.lower().replace(" ", "").replace(".", "") == "banana":
+        if results.lower().replace(" ", "").replace(".", "").replace("!", "").replace("?", "") == "banana":
             winsound.PlaySound("tts_sentences/acces_granted._welcome.wav", winsound.SND_FILENAME)
             return "pwd_correct"
     
@@ -186,13 +187,14 @@ def entryApprovedHandler(state, stateData):
     while n_questions < max_questions:
         start = time.time()
         
-        #play waiting sound
-        play_audio_thread = threading.Thread(target=winsound.PlaySound, args=("tts_sounds/thinking_sound_quiet.wav", winsound.SND_FILENAME,))
-        play_audio_thread.start()
         
         # record microphone
         audio = general_speech_detection()
         wav_data = audio.get_wav_data()
+        
+        #play waiting sound
+        play_audio_thread = threading.Thread(target=winsound.PlaySound, args=("tts_sounds/thinking_sound_quiet.wav", winsound.SND_FILENAME,))
+        play_audio_thread.start()
         
         # save audio file 
         with open('output.wav', 'wb') as f:
@@ -206,16 +208,19 @@ def entryApprovedHandler(state, stateData):
         # run langchain
         result = conv_chain.predict(question=transcript['text'], user=username)
 
+        if(result.lower().startswith("hubert:")):
+            result = result[8:]
+        
         end = time.time()
         print('Whisper + ChatGPT time: ' + str(end - start))
         print(result)
+        play_audio_thread.join()
         
         # answer question
         create_current_message(result)
         winsound.PlaySound("current_message.wav", winsound.SND_FILENAME,)
         
         n_questions += 1
-        play_audio_thread.join()
 
     #easter egg
     stateData.wait(1)
@@ -233,9 +238,10 @@ def defendHandler(state, stateData):
     winsound.PlaySound("tts_sentences/you_have_20_seconds_to_leave_the_area.wav", winsound.SND_FILENAME)
    
     #pull gun 
-    stateData.move_servo('E', 2050)
-    stateData.wait(1)
+    stateData.move_servo('E', 2090)
+    stateData.wait(2)
     stateData.move_servo('S', 1750)
+    stateData.move_servo('E', 2050)
     
     
     is_gone = defendHandler_pearson_has_left(stateData)
