@@ -19,8 +19,16 @@ chat = ChatOpenAI(openai_api_key=API_KEY, model_name="gpt-3.5-turbo", temperatur
 
 
 def faceDetectionHandler_check_for_face(stateData):
+    """
+    Detects a face within a 3-second window. If detected, plays associated sound files.
     
-    
+    Parameters:
+    - stateData (StateData): An instance of the StateData class which provides methods for fetching data, moving parts, and following detected objects.
+
+    Returns:
+    - bool: True if a face is detected within the time window, otherwise False.
+    """
+
     timeToShowFace = 3
     start = np.datetime64('now')
     
@@ -38,8 +46,15 @@ def faceDetectionHandler_check_for_face(stateData):
 
 
 def faceDetectionHandler_recognized_face(stateData):
+    """
+    Checks for a recognized face within a 10-second window. If not recognized, plays an associated sound file.
     
-    
+    Parameters:
+    - stateData (StateData): An instance of the StateData class which provides methods for fetching data, moving parts, and following detected objects.
+
+    Returns:
+    - bool: True if a face with a recognized label is detected within the time window, otherwise False (and plays a "not recognized" sound).
+    """
     timeToRecognizeFace = 10
     start = np.datetime64('now')
     
@@ -57,6 +72,12 @@ def faceDetectionHandler_recognized_face(stateData):
 
 
 def general_speech_detection():
+    """
+    Captures a speech snippet using the microphone for up to 5 seconds after beeping. 
+    
+    Returns:
+    - AudioData: An object containing captured audio data.
+    """
     
     with sr.Microphone() as source:
         winsound.Beep(1000,100)
@@ -66,7 +87,16 @@ def general_speech_detection():
         return recognizer.listen(source,phrase_time_limit=5)
     
 def processPasswordHandler_lang_setup(username):
+    """
+    Sets up a conversation chain for a guard robot named Hubert in Area 51. The conversation context is
+    determined by the `username` provided, with specific messaging for the user named "human".
     
+    Parameters:
+    - username (str): The name of the user. Special messaging is set if username is "human".
+    
+    Returns:
+    - LLMChain: An LLMChain object containing conversation prompt and memory configurations for the chat.
+    """
     if username == "human":
         system_message = "You are a guard robot named Hubert with the purpose of surveilling Area 51. " \
                          "You are talking to a {user} who is authorized personnel. " \
@@ -98,7 +128,16 @@ def processPasswordHandler_lang_setup(username):
     return conv_chain
     
 def processPasswordHandler_get_username(stateData):
-
+    """
+    Retrieves the username based on the recognized face label from the provided state data.
+    If no recognized face is detected, defaults to "human".
+    
+    Parameters:
+    - stateData (StateData): An instance of the StateData class which provides methods for fetching data, moving parts, and following detected objects.
+    
+    Returns:
+    - str: Recognized username or "human" if no recognized face is detected.
+    """
     username = "human" #a human
     data = stateData.get()
     faces = list(data["faces"].values())
@@ -111,6 +150,16 @@ def processPasswordHandler_get_username(stateData):
     return username
         
 def defendHandler_pearson_has_left(stateData):
+    """
+    Monitors for Pearson's exit within a 20-second window by leveraging the functionalities of the StateData class. Pearson's exit is determined either by not detecting any faces or based on body position thresholds.
+
+    Parameters:
+    - stateData (StateData): An instance of the StateData class which provides methods for fetching data, moving parts, and following detected objects.
+
+    Returns:
+    - bool: True if Pearson has left (based on face count or body position criteria). If neither criteria is met within the time window, the function ends without a return value.
+    """
+
     timeToLeave = 20
     start = np.datetime64('now')
     
@@ -127,7 +176,12 @@ def defendHandler_pearson_has_left(stateData):
         
         
 def defendHandler_shoot_sound():
-    
+    """
+    Plays a warning sound followed by a blaster sound using the winsound library.
+
+    Returns:
+    - None
+    """
     winsound.PlaySound("tts_sentences/your_time_is_up.wav", winsound.SND_FILENAME)
     winsound.PlaySound("tts_sounds/blaster.wav", winsound.SND_FILENAME)
    

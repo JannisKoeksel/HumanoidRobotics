@@ -18,6 +18,17 @@ position_min  = [560,   550,     950,    750,      550,   550]
 position_max  = [2330,  2340,    2400,   2200,     2400,  2150]
 
 def move(part, pos, ser):
+    """
+    Moves a specified body part of the robot to a given percentage position.
+
+    Parameters:
+    - part (str): The identifier of the body part to move, e.g., 'B', 'P', 'T', etc.
+    - pos (float): The desired position in percentage (-100 to 100).
+    - ser (serial.Serial): The serial object for communication with the robot.
+
+    Returns:
+    - tuple: A tuple containing the body part and its absolute position value.
+    """
     print("moving", part, pos)
     pos_abs_val = correct_position(part,pos)
     move_servo(part, pos_abs_val, ser)
@@ -28,6 +39,17 @@ def move(part, pos, ser):
 
 
 def move_servo(part, pos, ser):
+    """
+    Sends a command to move a specified servo to an absolute position.
+
+    Parameters:
+    - part (str): The identifier of the servo to move.
+    - pos (float): The desired absolute position.
+    - ser (serial.Serial): The serial object for communication.
+
+    Returns:
+    - tuple: A tuple containing the body part and its absolute position value.
+    """
     # print("SER start")
     if(ser.out_waiting > 50):
         ser.reset_output_buffer()
@@ -39,6 +61,16 @@ def move_servo(part, pos, ser):
     return (part,pos)
 
 def correct_position(part, perc_position):
+    """
+    Converts a percentage position into an absolute value for a given body part.
+
+    Parameters:
+    - part (str): The identifier of the body part.
+    - perc_position (float): The desired position in percentage (-100 to 100).
+
+    Returns:
+    - float: The absolute position value.
+    """
     index = body_parts.index(part)
 
     if abs(perc_position) >= 100:
@@ -53,60 +85,10 @@ def correct_position(part, perc_position):
 
     return new_pos
     
-def shoot():
-    # move_servo('S', 1990)
-    # move_servo('E', 2217) # bra med S1852 och E2125
-    # time.sleep(2)
-    # move_servo('G', 1694)  # change depending on laser pointer
-    move_servo('E', 2050)
-    time.sleep(1.5)
-    move_servo('S', 1750)
-    time.sleep(1.5)
-    move_servo('G', 1700)  # 1694
-
 
 def move_to_init():
+    """
+    Moves all servos to their initial positions.
+    """
     for j, servo in enumerate(body_parts):
         move_servo(servo, position_init[j])
-
-# while True:
-
-#     choice = input("Enter 'B', 'P', 'T', 'S', 'E' or 'G' for part, 'shoot', 'scan', 'init' or 'close': ")
-
-#     if choice == 'close':
-#         move_to_init()
-#         print('Run is over.')
-#         break
-#     elif choice == 'shoot':
-#         shoot()
-#         print('You are shot!')
-#         continue
-#     elif choice == 'scan':  # this is just to build on for when we can integrate the movement detection
-#         for i in range(0,10):  # change this to a while and add a break in each position if movement is detected
-#             print(i)
-#             if i%4 == 0:
-#                 move_servo('B', position_max[0]-200)
-#                 time.sleep(3)
-#             elif i%2 == 0:
-#                 move_servo('B', position_min[0]+200)
-#                 time.sleep(3)
-#             else:
-#                 move_servo('B', position_init[0])
-#                 time.sleep(3)
-#         continue
-#     elif choice == 'init':
-#         move_to_init()
-#         continue
-#     elif choice not in body_parts:
-#         print('Not a valid input. Try again.')
-#         continue
-
-#     position_choice = int(input("Enter rotation from center 0 (-100,100): "))
-#     new_position = correct_position(choice, position_choice)
-
-#     print('Body part chosen: ', choice)
-#     print('Position value chosen: ', new_position)
-
-#     move_servo(choice, new_position)
-
-    

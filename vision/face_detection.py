@@ -5,6 +5,33 @@ import traceback
 
 
 def face_detection(queue, terminate):
+    """
+    Real-time face detection using a webcam and YOLO from the ultralytics library.
+
+    This function captures frames from the webcam, applies the YOLO model to detect faces,
+    and pushes the frames along with the detected face coordinates to the provided queue. 
+    The detection runs continuously until the `terminate` flag is set.
+
+    Parameters:
+    - queue (multiprocessing.Queue): A queue to push the frames and detected face coordinates.
+    - terminate (multiprocessing.Value): A flag to control the termination of the detection loop.
+        If set to 1, the detection stops.
+
+    Outputs to queue:
+    - frame (numpy.ndarray): The captured frame from the webcam.
+    - faces (list): List of coordinates of detected faces in the format [left, top, right, bottom].
+
+    Note:
+    Ensure that the terminate flag is initialized to 0 for the function to start. To stop the function,
+    set the terminate flag to 1. The provided queue should be used to retrieve the frames and face data
+    in another process.
+
+    Returns:
+    None
+
+    Raises:
+    Exception: If there's an error during the detection or capturing process.
+    """
     from ultralytics import YOLO
     import cv2
     model = YOLO("Vision\Models\yolov8n-face.pt")

@@ -5,19 +5,9 @@ import dlib
 import time
 import traceback
 
-# This is a demo of running face recognition on live video from your webcam. It's a little more complicated than the
-# other example, but it includes some basic performance tweaks to make things run a lot faster:
-#   1. Process each video frame at 1/4 resolution (though still display it at full resolution)
-#   2. Only detect faces in every other frame of video.
 
-# PLEASE NOTE: This example requires OpenCV (the `cv2` library) to be installed only to read from your webcam.
-# OpenCV is *not* required to use the face_recognition library. It's only required if you want to run this
-# specific demo. If you have trouble installing it, try any of the other demos that don't require it instead.
 
-# Get a reference to webcam #0 (the default one)
-# video_capture = cv2.VideoCapture(0)
-
-# Load a sample picture and learn how to recognize it.
+# Load a sample picture and create encodings.
 jannis_image = face_recognition.load_image_file("D:/IT/HumanoidRobotics/FaceDetection/faces/jannis.jpg")
 jannis_face_encoding = face_recognition.face_encodings(jannis_image)[0]
 emma_image = face_recognition.load_image_file("D:/IT/HumanoidRobotics/FaceDetection/faces/emma.jpg")
@@ -47,8 +37,26 @@ process_this_frame = True
 
 
 def process_frame(frame):
-    # Resize frame of video to 1/4 size for faster face recognition processing
-    
+    """
+    Detects and recognizes faces in the provided frame using pre-known face encodings.
+
+    This function resizes the given frame for faster processing, converts it to RGB, 
+    and then detects face locations. It then extracts the face encodings and compares them 
+    with known face encodings to recognize the individual. The function returns the recognized 
+    label (name) of the face if a match is found, otherwise returns None.
+
+    Parameters:
+    - frame (numpy.ndarray): The frame in which to detect and recognize faces. It should be a BGR image 
+                             as typically obtained from OpenCV functions.
+
+    Globals:
+    - known_face_encodings (list): List of face encodings for known individuals.
+    - known_face_names (list): List of names corresponding to the known face encodings.
+
+    Returns:
+    - label (str or int): Name of the recognized individual, if a match is found. 
+                          If no match is found or no faces are detected, it returns -1 or None.
+    """
     h,w,d = frame.shape
     
     if(h > 300):
@@ -59,17 +67,10 @@ def process_frame(frame):
     # Convert the image from BGR color (which OpenCV uses) to RGB color (which face_recognition uses)
     rgb_small_frame = np.ascontiguousarray(small_frame[:, :, ::-1])
     
-    # print("before face_locations")
-    # print(type(rgb_small_frame), rgb_small_frame.shape, rgb_small_frame.dtype)
-
     # Find all the faces and face encodings in the current frame of video
     face_locations = face_recognition.face_locations(rgb_small_frame)
-    # print(face_locations)
-    
-  
 
     face_encodings = face_recognition.face_encodings(rgb_small_frame,face_locations, model="large")
-
 
     label = None
     if(len(face_encodings) == 0): return label
@@ -77,13 +78,6 @@ def process_frame(frame):
     # See if the face is a match for the known face(s)
     matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
 
-
-    # # If a match was found in known_face_encodings, just use the first one.
-    # if True in matches:
-    #     first_match_index = matches.index(True)
-    #     name = known_face_names[first_match_index]
-
-    # Or instead, use the known face with the smallest distance to the new face
     face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
     best_match_index = np.argmin(face_distances)
     name = -1
@@ -97,6 +91,35 @@ def process_frame(frame):
 
 
 def face_detect(queue_in,queue_out,terminate):
+    """
+    Processes frames from an input queue to detect faces and pushes the results to an output queue.
+
+    This function continuously retrieves frames from the `queue_in`, applies face detection 
+    using the `process_frame` function, and pushes the detection labels along with frame IDs 
+    to the `queue_out`. The processing runs continuously until the `terminate` flag is set.
+
+    Parameters:
+    - queue_in (multiprocessing.Queue): An input queue to retrieve frames and frame IDs.
+    - queue_out (multiprocessing.Queue): An output queue to push the detection labels and frame IDs.
+    - terminate (multiprocessing.Value): A flag to control the termination of the processing loop.
+        If set to 1, the processing stops.
+
+    Outputs to queue_out:
+    - labels (list): List of detected face labels for each frame.
+    - frame_id (int): ID of the frame corresponding to the labels.
+
+    Note:
+    The function assumes the availability of a `process_frame` function for detecting faces in a frame.
+    Ensure that the terminate flag is initialized to 0 for the function to start. To stop the function,
+    set the terminate flag to 1. The provided input queue should contain frames and frame IDs, 
+    and the output queue should be used to retrieve the processed labels and frame IDs.
+
+    Returns:
+    None
+
+    Raises:
+    Exception: If there's an error during the processing.
+    """
     try:
         while True:
             time.sleep(0.001)

@@ -29,6 +29,18 @@ def euclidean_distance(x,y,old_x,old_y):
 
 @dataclass
 class Face: 
+    """
+    Dataclass to represent a detected face.
+
+    Attributes:
+    - center: List of tuples containing x, y coordinates of the face center over time.
+    - label: Identifier or name associated with the detected face. Can be a string, integer, or None.
+    - fid: A unique face ID.
+    - age: Age of the face in terms of frames since it was first detected.
+    - frame: List of frame numbers where the face was detected.
+    - detections: Number of times this face has been detected.
+    - detected: Flag to indicate if the face has been successfully labeled/detected.
+    """
     
     center: List[Tuple[int,int]]
     label: str|None|int
@@ -39,12 +51,45 @@ class Face:
     detected = False
     
     def update_center(self,x:int,y:int):
+        """
+        Update the center coordinates of the detected face.
+
+        Args:
+        x (int): The x-coordinate of the center.
+        y (int): The y-coordinate of the center.
+
+        Raises:
+        None
+
+        Returns:
+        None
+
+        Notes:
+        Maintains the size of the 'center' list by removing older points if the number of stored points exceeds
+        (MAX_AGE_THRESHOLD * 4). Specifically, the oldest (MAX_AGE_THRESHOLD * 3) points are deleted.
+        """
         if(len(self.center) > MAX_AGE_THRESHOLD*4):
             del self.center[0:MAX_AGE_THRESHOLD*3]
             
         self.center.append((x,y))
         
     def update_label(self,label:str|int|None):
+        """
+        Update the label of the face with the provided label.
+
+        Args:
+            label (Union[str, int, None]): The label to update with. Can be a string, integer, or None.
+
+        Raises:
+            None
+
+        Returns:
+            None
+
+        Notes:
+            If the current label is None or -1 and a valid label is provided, the face's label is updated.
+            Additionally, if a valid label (other than None or -1) is provided, the 'detected' attribute of the face is set to True.
+        """
         # self.label = label
         if(label == None): return
         
@@ -56,6 +101,23 @@ class Face:
         
             
     def get_distance(self,x:int,y:int):
+        """
+        Calculate the Euclidean distance between a provided point and the latest center of the detected face.
+
+        Args:
+        x (int): The x-coordinate of the given point.
+        y (int): The y-coordinate of the given point.
+
+        Raises:
+        None
+
+        Returns:
+        float: The Euclidean distance between the two points.
+
+        Notes:
+        Uses the 'euclidean_distance' function to compute the distance.
+        The latest center of the detected face is retrieved from the end of the 'center' list.
+        """
         return euclidean_distance(x,y,*self.center[-1])
     
     
@@ -68,6 +130,19 @@ class FaceData:
         self.faces: Dict[int, 'Face'] = {}
     
     def get_id_if_exists(self, x,y):
+        """
+        Determine if a face already exists near the given point (x,y).
+
+        This method checks the distance of the given point (x,y) to the center of previously detected faces.
+        If a face is found within the DISTANCE_THRESHOLD, its ID is returned. If no such face is found, None is returned.
+
+        Args:
+        x (int): The x-coordinate of the point.
+        y (int): The y-coordinate of the point.
+
+        Returns:
+        Optional[int]: The ID of the existing face within the threshold, or None if no such face exists.
+        """
         if(len(self.faces.keys()) == 0):return None
         min_distance = 1000
         min_d_fid = None
@@ -80,6 +155,26 @@ class FaceData:
         return min_d_fid
     
     def process_new_frame(self, face_locations, face_labels, labels_frame_id):
+        """
+        Process a new frame to update and manage detected face data.
+
+        This method carries out the following operations:
+        1. Ages each previously detected face by increasing its age counter.
+        2. Identifies and marks faces for deletion if they exceed the `MAX_AGE_THRESHOLD`.
+        3. Checks for duplicate labels and removes duplicates.
+        4. Processes new face locations to determine if they match existing faces or if they are new detections.
+        5. Updates or adds face records accordingly.
+        6. If labels are provided for the detected faces, they are associated with the corresponding face records.
+        7. Updates the historic data with the IDs of the faces detected in the current frame.
+
+        Args:
+            face_locations (List[Tuple[int, int, int, int]]): A list of face locations represented as (top, right, bottom, left) coordinates.
+            face_labels (List[Union[str, int, None]]): A list of labels for the detected faces.
+            labels_frame_id (int): The frame ID associated with the provided face labels.
+
+        Raises:
+            Exception: If there's a mismatch in the length of historic data and face labels.
+        """
         # print("process frame", face_locations)
         #update data age
         to_delete = []
@@ -97,25 +192,10 @@ class FaceData:
             if(old_face.age > MAX_AGE_FOR_DETECTION):
                 old_face.detected = False
                 
-            
         #kill old 
         for key in to_delete: 
             self.faces.pop(key)
             
-            
-        # remove outdated historic frames
-        # frames_to_delete = []
-        # for key in self.historic_data.keys():
-        #     if(key < self.frame_id - 100):
-        #         frames_to_delete.append(key)
-                
-        # for key in frames_to_delete: 
-        #     self.historic_data.pop(key)
-        
-        
-        
-        # print("faces:", len(face_locations), "labels:",  face_labels)
-        
         #check for duplicates 
         labels = set()
         to_delete = set()
@@ -178,11 +258,26 @@ class FaceData:
 
 
 def start(queue, quit):
+    """
+    Start the main event loop to manage face detection and recognition processes.
+
+    The function initializes two parallel processes: 
+    1. `face_detection` - Responsible for detecting faces in frames.
+    2. `identify_faces` - Responsible for identifying recognized faces based on previous data.
+    
+    The function continuously processes frames, updates the detected faces data, and communicates 
+    with the parallel processes using multiprocessing queues.
+
+    Args:
+        queue (multiprocessing.Queue): The main data queue used to gather and send out data.
+        quit (multiprocessing.Value): A flag to indicate when to exit the event loop and terminate the processes.
+
+    Raises:
+        Exception: Captures and prints any exception that occurs within the event loop.
+    """
     print("starting eventloop")
     face_data = FaceData()
-    
-    
-    
+
     face_queue = multiprocessing.Queue()
     face_quit = multiprocessing.Value('I', 0)
     face_p = multiprocessing.Process(target=face_detection, args=(face_queue,face_quit))
@@ -197,12 +292,9 @@ def start(queue, quit):
     try:
         while True:
             
-            # print("looping")
             time.sleep(0.005)
             
             data_gatherer = {}
-            
-            
             
             latest_data = None
             if(face_queue.empty()):
@@ -212,23 +304,17 @@ def start(queue, quit):
                 latest_data = face_queue.get(False)
                 
             data_gatherer["full_frame"] = latest_data["frame"]
-            # data_gatherer["face_coordinates"] = latest_data["faces"]
             
-        
-            
-            # print(latest_data)
             face_frames = []
             for face in latest_data["faces"]:
                 face_frames.append(latest_data["frame"][face[0]:face[2],face[1]:face[3]])
                 
-            # print("fID:", face_data.frame_id)
             if(len(face_frames) > 0):
-                # print("put:", face_data.frame_id)
+
                 try:
                     
                     face_recon_queue_in.put_nowait({"frames":face_frames, "frame_id": face_data.frame_id})
                 except: 
-                    # print("full")
                     pass
             
             face_labels = None
@@ -243,13 +329,7 @@ def start(queue, quit):
             
             face_data.process_new_frame(latest_data["faces"], face_labels, recognition_frame_id)
             data_gatherer["faces"] = face_data
-            
-            # data_gatherer["face_labels"] = face_labels
-            
-            # TODO voice 
-            
-            # print("event loop put", data_gatherer)
-            # print("put")
+
             queue.put(data_gatherer)
             
             if quit.value == 1:

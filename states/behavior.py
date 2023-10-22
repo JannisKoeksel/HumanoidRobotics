@@ -1,8 +1,6 @@
-
-
 from .state import State, StateMachine
 
-
+#define states
 idle = State("idle")
 scanning = State("scanning")
 defend = State("defend")
@@ -10,7 +8,7 @@ process_pwd = State("process_pwd")
 check_identity = State("check_identity")
 entry_approved = State("entry_approved")
 
-
+# define transitions
 idle >> scanning | "initialized"
 
 scanning >> idle | "no_detection"
